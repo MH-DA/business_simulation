@@ -39,7 +39,7 @@ cp .env.example .env.local   # 필요한 키만 채운다 (Mock 개발은 비워
 npm run dev                  # http://localhost:3000
 npm run typecheck            # 타입 검사 (라우트 타입을 먼저 생성한다)
 npm run lint
-node --test lib/place-url.test.ts   # 링크 해석 테스트
+node --test lib/place-url.test.ts lib/metrics/metrics.test.ts   # 단위 테스트
 npm run build
 ```
 
@@ -51,7 +51,7 @@ shadcn/ui 컴포넌트는 `components.json` 설정이 되어 있어서 필요할
 - [x] 1단계 프로젝트 생성과 디자인 토큰 (Next.js 16 + Tailwind 4 + Pretendard, 색상·둥글기는 `app/globals.css`)
 - [x] 2단계 정적 화면 (시작·링크 안내·분석 결과·상담, 샘플 데이터)
 - [x] 3단계 API와 화면 흐름 (링크 검사 → 분석 중 → 결과, 수집 필요 상태)
-- [ ] 4단계 지표 계산 모듈
+- [x] 4단계 지표 계산 모듈 (`lib/metrics`, 점수화 없음, 단위 테스트)
 - [ ] 5단계 챗봇 (RAG + LLM)
 - [ ] 6단계 실제 데이터 연결
 
