@@ -48,7 +48,7 @@ shadcn/ui 컴포넌트는 `components.json` 설정이 되어 있어서 필요할
 
 - [x] 폴더 뼈대, 공통 타입, Provider 인터페이스, MockProvider, 샘플 데이터
 - [x] 1단계 프로젝트 생성과 디자인 토큰 (Next.js 16 + Tailwind 4 + Pretendard, 색상·둥글기는 `app/globals.css`)
-- [ ] 2단계 정적 화면
+- [x] 2단계 정적 화면 (시작·링크 안내·분석 결과·상담, 샘플 데이터)
 - [ ] 3단계 API와 화면 흐름 (데이터 공급자 포함)
 - [ ] 4단계 지표 계산 모듈
 - [ ] 5단계 챗봇 (RAG + LLM)

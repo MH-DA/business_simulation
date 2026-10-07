@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { SERVICE_NAME } from "@/lib/config";
 import "./globals.css";
 
 // Pretendard 가변 글꼴 (app/fonts/README.txt 참고)
@@ -11,7 +12,7 @@ const pretendard = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "사장님 AI 마케팅 도우미",
+  title: SERVICE_NAME,
   description: "네이버 플레이스 링크로 가게를 살펴보고, 지금 필요한 마케팅을 함께 찾아드려요.",
 };
 

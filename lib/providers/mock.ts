@@ -23,6 +23,11 @@ function toCollected(data: PlaceFile): CollectedPlace {
   return { ...data, collectedAt: new Date().toISOString(), source: "mock" };
 }
 
+// placeId 에 해당하는 수집 파일이 있는지 (없으면 sample.json 으로 대신 보여주게 된다)
+export async function hasPlace(placeId: string): Promise<boolean> {
+  return (await loadAll()).has(placeId);
+}
+
 // data/places/*.json 의 가짜 데이터를 돌려준다. 개발 기본값 (USE_MOCK_DATA=true).
 export class MockProvider implements PlaceDataProvider {
   readonly name = "mock";
