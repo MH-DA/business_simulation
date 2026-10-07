@@ -39,7 +39,7 @@
 | 화면 + 서버 | Next.js (App Router) + TypeScript |
 | 스타일 | Tailwind CSS + shadcn/ui, 글꼴 Pretendard |
 | LLM | Claude 또는 OpenAI API (서버에서만 호출, `lib/llm/`에 모아 교체 가능하게) |
-| 저장 | 초기 JSON 파일 → 이후 Supabase (PostgreSQL, 필요 시 pgvector) |
+| 저장 | Supabase |
 | RAG | 초기 문제 유형 태그 매칭 → 자유 질문 대응이 부족하면 벡터 검색 추가 |
 | 수집기 | 기존 Python 수집기(Playwright) → 이후 FastAPI로 감싸 별도 서버 |
 | 배포 | Vercel (웹), Render 또는 Railway (수집기) |
