@@ -31,10 +31,23 @@ docs/
   knowledge/  지식 원본 HTML (사람이 읽는 원본)
 ```
 
+## 실행 방법
+
+```bash
+npm install
+cp .env.example .env.local   # 필요한 키만 채운다 (Mock 개발은 비워도 됨)
+npm run dev                  # http://localhost:3000
+npm run typecheck            # 타입 검사 (라우트 타입을 먼저 생성한다)
+npm run lint
+npm run build
+```
+
+shadcn/ui 컴포넌트는 `components.json` 설정이 되어 있어서 필요할 때 추가한다: `npx shadcn@latest add button card input badge`
+
 ## 진행 상황
 
 - [x] 폴더 뼈대, 공통 타입, Provider 인터페이스, MockProvider, 샘플 데이터
-- [ ] 1단계 프로젝트 생성과 디자인 토큰
+- [x] 1단계 프로젝트 생성과 디자인 토큰 (Next.js 16 + Tailwind 4 + Pretendard, 색상·둥글기는 `app/globals.css`)
 - [ ] 2단계 정적 화면
 - [ ] 3단계 API와 화면 흐름 (데이터 공급자 포함)
 - [ ] 4단계 지표 계산 모듈

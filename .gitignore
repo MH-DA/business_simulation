@@ -14,9 +14,15 @@ next-env.d.ts
 
 # misc
 .DS_Store
+*.pem
 .vercel
+build/
 coverage/
+.pnp
+.pnp.*
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # python collector (6단계)
 __pycache__/
