@@ -91,7 +91,7 @@ export type KnowledgeChunk = {
 export type Guardrail = { id: string; rule: string; detail: string };
 
 // 분석 작업(job) 상태. /api/analyze → /api/jobs/[jobId]
-export type JobStatus = "queued" | "collecting" | "analyzing" | "done" | "failed";
+export type JobStatus = "queued" | "collecting" | "analyzing" | "done" | "failed" | "needs_collection";
 
 export type Job = {
   jobId: string;

@@ -31,23 +31,26 @@ docs/
   knowledge/  지식 원본 HTML (사람이 읽는 원본)
 ```
 
-## 실행
+## 실행 방법
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+cp .env.example .env.local   # 필요한 키만 채운다 (Mock 개발은 비워도 됨)
+npm run dev                  # http://localhost:3000
+npm run typecheck            # 타입 검사 (라우트 타입을 먼저 생성한다)
+npm run lint
+node --test lib/place-url.test.ts   # 링크 해석 테스트
+npm run build
 ```
 
-- 시작 화면에 네이버 플레이스 링크를 넣으면 분석 중 → 결과 화면으로 이동한다. (지금은 모든 매장이 Mock 데이터)
-- 바로 보기: `/result/sample-cafe-001` (Figma 예시 카페), `/result/sample-gym-001` (헬스장 샘플)
-- Next.js 16 + Cache Components 사용. 코드 작성 전 `AGENTS.md` 안내대로 `node_modules/next/dist/docs/`를 확인한다.
+shadcn/ui 컴포넌트는 `components.json` 설정이 되어 있어서 필요할 때 추가한다: `npx shadcn@latest add button card input badge`
 
 ## 진행 상황
 
 - [x] 폴더 뼈대, 공통 타입, Provider 인터페이스, MockProvider, 샘플 데이터
-- [x] 1단계 프로젝트 생성과 디자인 토큰
-- [x] 2단계 정적 화면 (챗봇은 가짜 답변 `lib/mock/chat.ts`)
-- [ ] 3단계 API와 화면 흐름 (데이터 공급자 포함)
+- [x] 1단계 프로젝트 생성과 디자인 토큰 (Next.js 16 + Tailwind 4 + Pretendard, 색상·둥글기는 `app/globals.css`)
+- [x] 2단계 정적 화면 (시작·링크 안내·분석 결과·상담, 샘플 데이터)
+- [x] 3단계 API와 화면 흐름 (링크 검사 → 분석 중 → 결과, 수집 필요 상태)
 - [ ] 4단계 지표 계산 모듈
 - [ ] 5단계 챗봇 (RAG + LLM)
 - [ ] 6단계 실제 데이터 연결

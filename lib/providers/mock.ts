@@ -4,7 +4,7 @@ import type { CollectedPlace, Store } from "@/types";
 import type { PlaceDataProvider } from "./types";
 
 const PLACES_DIR = path.join(process.cwd(), "data", "places");
-const FALLBACK_FILE = "sample-cafe.json"; // Figma 시안과 같은 카페 예시
+const FALLBACK_FILE = "sample.json";
 
 type PlaceFile = Omit<CollectedPlace, "collectedAt" | "source">;
 
@@ -21,6 +21,11 @@ async function loadAll(): Promise<Map<string, PlaceFile>> {
 
 function toCollected(data: PlaceFile): CollectedPlace {
   return { ...data, collectedAt: new Date().toISOString(), source: "mock" };
+}
+
+// placeId 에 해당하는 수집 파일이 있는지 (없으면 sample.json 으로 대신 보여주게 된다)
+export async function hasPlace(placeId: string): Promise<boolean> {
+  return (await loadAll()).has(placeId);
 }
 
 // data/places/*.json 의 가짜 데이터를 돌려준다. 개발 기본값 (USE_MOCK_DATA=true).
