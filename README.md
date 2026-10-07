@@ -7,8 +7,9 @@ BA AI 경영 시뮬레이션 팀 프로젝트. 사장님이 네이버 플레이�
 
 ## 핵심 원칙
 
-- 판단은 규칙 기반 진단 엔진이 하고, LLM은 설명과 문구화만 한다.
-- 화면의 숫자는 엔진이 계산한 것만 쓴다.
+- 점수화하지 않는다. 종합 점수·가중치·순위 없이 사실(수치)만 보여준다.
+- 숫자는 지표 계산 모듈이 계산한 것만 쓰고, LLM은 지식베이스를 근거로 설명과 문구화만 한다.
+- 무엇을 먼저 할지는 서비스가 정하지 않고, 근거를 보여준 뒤 사장님이 판단하도록 돕는다.
 - 처음에는 Mock 데이터로 만들고, 실제 수집기는 마지막에 붙인다.
 
 ## 폴더
@@ -18,13 +19,16 @@ app/          화면(/ , /guide, /analyzing/[jobId], /result/[placeId])과 API r
 components/   StoreCard, KeywordChip, InsightCard, EvidenceCard, ConfirmCard, ChatPanel ...
 lib/
   providers/  데이터 공급자 (PlaceDataProvider 인터페이스, MockProvider)
-  engine/     진단 엔진 (4단계)
+  metrics/    지표 계산 (점수화 없음, 4단계)
   knowledge/  지식 조각 검색 (5단계)
   llm/        프롬프트, LLM 호출 (5단계)
 data/
   places/     매장별 수집 결과 JSON (현재는 가짜 샘플)
-  knowledge/  마케팅 지식 조각 JSON
+  knowledge/  RAG가 읽는 지식 조각 (principles.json, guardrails.json)
 types/        공통 데이터 타입
+docs/
+  design/     Figma 화면 이미지
+  knowledge/  지식 원본 HTML (사람이 읽는 원본)
 ```
 
 ## 진행 상황
@@ -33,7 +37,7 @@ types/        공통 데이터 타입
 - [ ] 1단계 프로젝트 생성과 디자인 토큰
 - [ ] 2단계 정적 화면
 - [ ] 3단계 API와 화면 흐름
-- [ ] 4단계 진단 엔진
+- [ ] 4단계 지표 계산 모듈
 - [ ] 5단계 챗봇 (RAG + LLM)
 - [ ] 6단계 실제 데이터 연결
 

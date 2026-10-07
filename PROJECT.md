@@ -39,7 +39,7 @@
 | 화면 + 서버 | Next.js (App Router) + TypeScript |
 | 스타일 | Tailwind CSS + shadcn/ui, 글꼴 Pretendard |
 | LLM | Claude 또는 OpenAI API (서버에서만 호출, `lib/llm/`에 모아 교체 가능하게) |
-| 저장 | Supabase |
+| 저장 | 초기 JSON 파일 → 이후 Supabase (PostgreSQL, 필요 시 pgvector) |
 | RAG | 초기 문제 유형 태그 매칭 → 자유 질문 대응이 부족하면 벡터 검색 추가 |
 | 수집기 | 기존 Python 수집기(Playwright) → 이후 FastAPI로 감싸 별도 서버 |
 | 배포 | Vercel (웹), Render 또는 Railway (수집기) |
@@ -190,6 +190,7 @@ type KnowledgeChunk = {
   strength: "강함" | "중간" | "혼재"; core: string[]; apply: string[];
   examples: Partial<Record<Industry, string>>; signals: string[];
   actions: string[]; caution?: string; source?: string; signalTypes: string[];
+  principleEn?: string; description?: string; placeApplication?: string; sourceFile?: string;
 };
 
 type OwnerAnswer = { placeId: string; cardId: string; question: string; answer: string; answeredAt: string };
@@ -207,14 +208,52 @@ type Snapshot = { snapshotId: string; placeId: string; collectedAt: string; stor
 - 운영 방식 차이일 수 있는 항목은 `needsOwnerCheck = true` → 확인 필요 카드로 사장님께 질문
 - 단위 테스트 필수
 
-## 11. 지식베이스와 LLM 규칙
-- 지식 두 층위: 노출 지식(대표 키워드, 정보 완성도, 활성도) + 선택 지식(소비자 심리 원리 22개)
-- 선택 지식 분류: 선택과 결정 / 신뢰와 사회적 증거 / 가격 인식 / 경험과 기억 / 행동 유지와 재방문 / 반발과 압박
-- 저장: `data/knowledge/*.json` (`KnowledgeChunk` 형식), 검색은 `signalTypes`·`industry` 태그 매칭
-- 가드레일(제안 금지): 가짜 희소성, 대가성 리뷰 미표시, 리뷰·트래픽 조작, 해지·환불 방해, 과장 사진·원산지 허위
-- LLM 입력: 계산된 지표 JSON + 관련 지식 조각 + 사장님 이전 답변 + 대화 기록
-- LLM 금지: 점수 매기기·순위 매기기, 계산된 지표에 없는 숫자, '혼재' 원리 단정, 가드레일 위반 제안, 검색되지 않은 지식 인용
-- 출력은 JSON 구조(답변 본문, 사용한 knowledgeIds, 확인 질문)로 받고 서버에서 검증
+## 11. 지식베이스(RAG)와 LLM 규칙
+### 지식 원본과 변환 파일
+| 파일 | 역할 |
+|---|---|
+| `docs/knowledge/marketing_psychology_knowledge_base.html` | 원본 (상세판: 원리와 근거, 플레이스 적용, 진단 신호, 주의) |
+| `docs/knowledge/marketing_psychology_keywords_all_industries.html` | 원본 (키워드판: 핵심 개념, 공통 적용, 업종별 예시, 진단 신호, 출처) |
+| `data/knowledge/principles.json` | RAG가 실제로 읽는 파일 — 두 HTML을 합쳐 변환한 지식 조각 22개 (`KnowledgeChunk[]`) |
+| `data/knowledge/guardrails.json` | 제안 금지 규칙 6개 — 모든 LLM 호출에 항상 포함 |
+
+- HTML은 사람이 읽는 원본, JSON은 코드가 읽는 데이터. LLM에 HTML을 통째로 넣지 않는다.
+- 원본 HTML을 고치면 JSON도 함께 고친다 (필요 시 `scripts/html_to_knowledge.py`로 재변환).
+- 노출 지식(대표 키워드, 정보 완성도, 활성도) 조각은 같은 형식으로 `data/knowledge/exposure.json`에 추가 예정.
+
+### 검색 방식
+1. 지표 계산 모듈이 내보낸 `Finding.signalType`, 또는 챗봇 질문 의도(신규 유입/재방문/강점 홍보/불편 개선)를 신호 유형으로 바꾼다.
+2. `signalTypes`에 그 신호가 들어 있고, `examples`에 해당 업종 예시가 있는 조각을 우선으로 최대 3개 고른다.
+3. 고른 조각의 `description`, `core`, `apply`, `examples[업종]`, `caution`, `strength`만 LLM에 넘긴다 (토큰 절약).
+4. 태그 매칭으로 못 찾는 자유 질문이 많아지면 벡터 검색을 추가한다.
+
+### 신호 유형 목록 (`signalTypes`에 쓰는 값)
+| 값 | 의미 |
+|---|---|
+| `review_count_low` | 경쟁 매장 대비 방문자 리뷰 수 적음 |
+| `rating_high_reviews_low` | 별점 4.9 이상 + 리뷰 수 적음 |
+| `negative_review_no_reply` | 부정 리뷰에 답글 없음 |
+| `price_keyword_low` | 가격·가성비 관련 키워드 비율 낮음 |
+| `price_keyword_high_quality_low` | 가성비 키워드는 높고 품질 키워드는 낮음 |
+| `price_options_few` | 가격 선택지 1~2개 |
+| `menu_items_many` | 메뉴·가격 항목이 많음 |
+| `no_recommended_item` | 대표·추천 메뉴 표시 없음 |
+| `intro_weak` | 소개글 첫 두 줄이 인사말·일반론 |
+| `intro_no_evidence` | 소개글에 자격·인증·수치 근거 없음 |
+| `photo_weak` | 대표 사진 부족 |
+| `news_inactive` | 소식 발행 멈춤 |
+| `expectation_gap` | 소개글 강조점과 선택 키워드 비율이 어긋남 |
+| `pressure_keyword_low` | '과도한 권유 없음'류 키워드 비율 낮음 |
+| `refund_info_missing` | 일시정지·환불·유효기간 안내 없음 |
+| `new_customer` / `retention` / `strength_promotion` / `complaint_improve` | 챗봇 자주 묻는 질문 4개 |
+| `review_request` / `promotion_timing` | 리뷰 요청 문구, 프로모션 시점 관련 질문 |
+
+### LLM 규칙
+- 입력: 계산된 지표 JSON + 검색된 지식 조각(최대 3개) + `guardrails.json` + 사장님 이전 답변 + 대화 기록
+- 금지: 점수·순위 매기기, 우선순위 단정, 계산된 지표에 없는 숫자, '혼재' 원리 단정, 가드레일 위반, 검색되지 않은 지식 인용
+- 지식 조각의 `placeApplication`에 "~가 우선이다" 같은 표현이 있어도 "~를 먼저 고려해볼 수 있어요"처럼 제안형으로 바꿔 말한다
+- 근거 강도 '중간'은 "가능성이 높아요" 수준으로 표현
+- 출력은 JSON 구조 `{ answer, knowledgeIds, confirmQuestion? }`로 받고, 서버가 `knowledgeIds`가 실제 검색 결과에 있는지 검증한 뒤 근거 카드로 표시
 
 ## 12. 비기능 요구사항
 - API 키(LLM, 수집기)는 `.env.local`과 서버에서만 사용, 브라우저 코드 노출 금지
@@ -229,7 +268,7 @@ type Snapshot = { snapshotId: string; placeId: string; collectedAt: string; stor
 3. API와 화면 흐름: `/api/analyze`, `/api/jobs`, `/api/places`, 분석 중 화면, URL 검증 안내
 4. `types/`와 `PlaceDataProvider` + `MockProvider`/`DemoProvider`, Mock 데이터 (음식점·카페·공방·헬스장·스터디카페 각 3곳)
 5. 지표 계산 모듈 (`lib/metrics/`, 점수화 없이 비율·차이·정보 확인, 단위 테스트)
-6. 지식베이스 JSON + 태그 검색 (`lib/knowledge/`)
+6. 지식베이스: `data/knowledge/principles.json`·`guardrails.json`을 읽어 `signalTypes`·업종 태그로 검색하는 `lib/knowledge/` (원본 HTML은 `docs/knowledge/`)
 7. 리뷰 분석 문단 생성 (`lib/llm/`)
 8. 챗봇 `/api/chat`: 의도 분류, RAG, 스트리밍, 근거 카드 검증, 확인 카드
 9. `/api/answers`: 사장님 답변 저장과 다음 카드 반영

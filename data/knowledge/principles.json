@@ -1,0 +1,824 @@
+[
+  {
+    "id": "K-choice-01",
+    "layer": "선택",
+    "principle": "선택 과부하",
+    "principleEn": "Choice Overload",
+    "category": "선택과 결정",
+    "strength": "혼재",
+    "core": [
+      "선택지 과다",
+      "비교 포기",
+      "만족도 저하",
+      "조건부 효과"
+    ],
+    "apply": [
+      "메뉴·상품 수 정리",
+      "대표 상품 강조",
+      "카테고리 묶기"
+    ],
+    "examples": {
+      "음식점": "시그니처 3개 강조",
+      "카페": "음료 메뉴 카테고리화",
+      "헬스장": "이용권·PT 조합 단순화",
+      "스터디카페": "시간권·기간권 정리"
+    },
+    "signals": [
+      "메뉴·가격 항목 多",
+      "가격·메뉴 관련 키워드 低"
+    ],
+    "actions": [
+      "메뉴·상품 수 정리",
+      "대표 상품 강조",
+      "카테고리 묶기"
+    ],
+    "description": "선택지가 너무 많으면 고르기를 포기하거나 고른 뒤 만족도가 떨어진다는 원리. 잼 실험(Iyengar & Lepper, 2000)에서 24종보다 6종 진열 시 구매율이 훨씬 높았다. 그러나 메타분석(Scheibehenne 외, 2010)에서 평균 효과는 거의 0이었고, 후속 메타분석(Chernev 외, 2015)은 선택지가 복잡하거나 선호가 불확실하거나 빨리 결정해야 할 때에만 효과가 나타난다고 정리했다.",
+    "placeApplication": "스터디카페의 시간권·기간권·정액권·좌석 종류, 헬스장의 기간권과 PT 횟수 조합이 한꺼번에 나열되면 첫 방문 고객이 비교를 포기하기 쉽다.",
+    "caution": "‘메뉴가 많으면 무조건 나쁘다’가 아니라 ‘비교가 어려운 선택지가 많을 때 문제’로 설명할 것",
+    "source": "Iyengar & Lepper 2000 · Scheibehenne 2010 · Chernev 2015",
+    "signalTypes": [
+      "menu_items_many",
+      "price_keyword_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-choice-02",
+    "layer": "선택",
+    "principle": "타협·미끼 효과",
+    "principleEn": "Compromise / Decoy",
+    "category": "선택과 결정",
+    "strength": "강함",
+    "core": [
+      "중간 선택",
+      "극단 회피",
+      "미끼 선택지"
+    ],
+    "apply": [
+      "3단 가격 구성",
+      "주력 상품 가운데 배치"
+    ],
+    "examples": {
+      "음식점": "단품·세트·스페셜 세트",
+      "카페": "사이즈 3단",
+      "헬스장": "3·6·12개월권",
+      "스터디카페": "50·100·200시간권"
+    },
+    "signals": [
+      "가격 선택지 1~2개"
+    ],
+    "actions": [
+      "3단 가격 구성",
+      "주력 상품 가운데 배치"
+    ],
+    "description": "세 개의 선택지가 있으면 극단을 피해 가운데를 고르는 경향이 있고(Simonson, 1989), 명백히 불리한 선택지 하나가 옆의 선택지를 더 매력적으로 보이게 만든다(Huber, Payne & Puto, 1982).",
+    "placeApplication": "팔고 싶은 이용권을 가운데 두는 3단 구성, 또는 6개월권 옆에 가격 차이가 크지 않은 3개월권을 두어 6개월권을 돋보이게 하는 구성.",
+    "caution": null,
+    "source": "Simonson 1989 · Huber 1982",
+    "signalTypes": [
+      "price_options_few",
+      "price_keyword_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-choice-03",
+    "layer": "선택",
+    "principle": "기본값 효과",
+    "principleEn": "Default Effect",
+    "category": "선택과 결정",
+    "strength": "강함",
+    "core": [
+      "기본 선택 유지",
+      "추천 표시"
+    ],
+    "apply": [
+      "추천 표시",
+      "첫 방문 기본 선택"
+    ],
+    "examples": {
+      "음식점": "'처음이면 이 메뉴'",
+      "카페": "기본 옵션 추천",
+      "헬스장": "첫 방문 기본 코스",
+      "스터디카페": "첫 이용 추천권"
+    },
+    "signals": [
+      "대표·추천 메뉴 표시 없음"
+    ],
+    "actions": [
+      "추천 표시",
+      "첫 방문 기본 선택"
+    ],
+    "description": "사람은 미리 정해진 선택지를 그대로 따르는 경향이 강하다. 장기기증 동의를 기본값으로 둔 국가와 아닌 국가의 동의율 차이가 대표 사례(Johnson & Goldstein, 2003).",
+    "placeApplication": "‘처음이라면 이 이용권’ 같은 추천 표시, 첫 방문자용 기본 코스 안내.",
+    "caution": null,
+    "source": "Johnson & Goldstein 2003",
+    "signalTypes": [
+      "no_recommended_item",
+      "new_customer"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-choice-04",
+    "layer": "선택",
+    "principle": "앵커링",
+    "principleEn": "Anchoring",
+    "category": "선택과 결정",
+    "strength": "강함",
+    "core": [
+      "첫 숫자 기준점",
+      "상대 비교"
+    ],
+    "apply": [
+      "고가 상품 먼저 노출",
+      "기준 가격 제시"
+    ],
+    "examples": {
+      "음식점": "코스·세트 상단 배치",
+      "카페": "시즌 음료 상단 배치",
+      "헬스장": "PT 회당가 표기",
+      "스터디카페": "정가 대비 기간권가"
+    },
+    "signals": [],
+    "actions": [
+      "고가 상품 먼저 노출",
+      "기준 가격 제시"
+    ],
+    "description": "처음 본 숫자가 이후 판단의 기준점이 된다(Tversky & Kahneman, 1974).",
+    "placeApplication": "가격표를 비싼 상품부터 보여주면 이후 상품이 상대적으로 저렴하게 느껴진다. 헬스장 PT 가격을 총액으로만 적으면 그 부담이 앵커가 되기도 한다.",
+    "caution": null,
+    "source": "Tversky & Kahneman 1974",
+    "signalTypes": [
+      "price_keyword_low",
+      "price_options_few"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-trust-01",
+    "layer": "선택",
+    "principle": "사회적 증거",
+    "principleEn": "Social Proof",
+    "category": "신뢰와 사회적 증거",
+    "strength": "강함",
+    "core": [
+      "타인 선택 추종",
+      "불확실성 속 판단"
+    ],
+    "apply": [
+      "리뷰 수",
+      "키워드 선택 인원",
+      "저장 수",
+      "인기 표시"
+    ],
+    "examples": {
+      "음식점": "'가장 많이 주문한 메뉴'",
+      "카페": "'베스트 음료'",
+      "헬스장": "회원 변화 후기",
+      "스터디카페": "합격·이용 후기"
+    },
+    "signals": [
+      "경쟁군 대비 리뷰 수 低"
+    ],
+    "actions": [
+      "리뷰 수",
+      "키워드 선택 인원",
+      "저장 수",
+      "인기 표시"
+    ],
+    "description": "확신이 없을 때 사람은 다른 사람들의 선택을 따라간다(Cialdini). 처음 가보는 가게를 고를 때 리뷰 수와 별점이 판단을 대신한다.",
+    "placeApplication": "리뷰 수, ‘○○명이 선택한 키워드’, 저장 수 같은 숫자 자체가 설득 도구다.",
+    "caution": null,
+    "source": "Cialdini",
+    "signalTypes": [
+      "review_count_low",
+      "new_customer"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-trust-02",
+    "layer": "선택",
+    "principle": "리뷰 수 휴리스틱",
+    "principleEn": "Review Count Heuristic",
+    "category": "신뢰와 사회적 증거",
+    "strength": "강함",
+    "core": [
+      "별점보다 리뷰 수",
+      "많은 쪽 선택"
+    ],
+    "apply": [
+      "별점 동률 시 리뷰 수 경쟁",
+      "리뷰 요청 루틴"
+    ],
+    "examples": {
+      "음식점": "계산 시 영수증 리뷰 안내",
+      "카페": "진동벨·컵홀더 안내문",
+      "헬스장": "첫 달 체크인 때 요청",
+      "스터디카페": "퇴실 키오스크 안내"
+    },
+    "signals": [
+      "별점 차 小 · 리뷰 수 차 大"
+    ],
+    "actions": [
+      "별점 동률 시 리뷰 수 경쟁",
+      "리뷰 요청 루틴"
+    ],
+    "description": "사람은 별점보다 리뷰 수를 더 신뢰하는 경향이 있어, 통계적으로 더 나쁜 선택이어도 리뷰가 많은 쪽을 고르는 경우가 많다(Powell 외, 2017, Psychological Science).",
+    "placeApplication": "별점이 비슷하면 리뷰 수 격차가 선택을 좌우한다. 수집한 헬스장 3곳처럼 별점이 모두 4.9대라면 사실상 리뷰 수와 키워드가 경쟁 축이다.",
+    "caution": null,
+    "source": "Powell 외 2017",
+    "signalTypes": [
+      "review_count_low",
+      "rating_high_reviews_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-trust-03",
+    "layer": "선택",
+    "principle": "완벽한 별점의 역효과",
+    "principleEn": "Too-Good Ratings",
+    "category": "신뢰와 사회적 증거",
+    "strength": "중간",
+    "core": [
+      "만점 의심",
+      "4.0~4.7 최적",
+      "부정 리뷰의 신뢰 효과"
+    ],
+    "apply": [
+      "별점보다 리뷰 수 확보",
+      "솔직한 리뷰 수용"
+    ],
+    "examples": {},
+    "signals": [
+      "별점 4.9↑ + 리뷰 수 少"
+    ],
+    "actions": [
+      "별점보다 리뷰 수 확보",
+      "솔직한 리뷰 수용"
+    ],
+    "description": "만점에 가까운 별점은 오히려 의심을 산다. Spiegel Research Center(2017)는 구매 가능성이 별점 4.0~4.7 구간에서 가장 높고 5점에 가까워질수록 다시 떨어진다고 보고했다. 부정 리뷰가 조금 섞여 있어야 긍정 리뷰도 믿는다.",
+    "placeApplication": "예일 스터디카페처럼 리뷰 37개에 별점 5.0이라면 별점을 더 올리기보다 리뷰 수를 늘려 신뢰의 근거를 쌓는 것이 우선이다.",
+    "caution": null,
+    "source": "Spiegel Research Center 2017",
+    "signalTypes": [
+      "rating_high_reviews_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-trust-04",
+    "layer": "선택",
+    "principle": "부정성 편향",
+    "principleEn": "Negativity Bias",
+    "category": "신뢰와 사회적 증거",
+    "strength": "강함",
+    "core": [
+      "부정 정보 가중",
+      "긍정 상쇄"
+    ],
+    "apply": [
+      "부정 리뷰 답글",
+      "개선 조치 공개"
+    ],
+    "examples": {
+      "음식점": "맛·위생 불만 대응",
+      "카페": "대기·소음 불만 대응",
+      "헬스장": "권유·기구 불만 대응",
+      "스터디카페": "소음·냉난방 불만 대응"
+    },
+    "signals": [
+      "부정 리뷰 무답글"
+    ],
+    "actions": [
+      "부정 리뷰 답글",
+      "개선 조치 공개"
+    ],
+    "description": "나쁜 정보는 같은 크기의 좋은 정보보다 훨씬 강하게 작용한다(Baumeister 외, 2001, ‘Bad is stronger than good’). 부정 리뷰 하나가 긍정 리뷰 여러 개의 효과를 상쇄할 수 있다.",
+    "placeApplication": "부정 리뷰를 무시하기보다 답글로 대응해야 하는 이유. 신규 고객은 리뷰 자체보다 사장님의 대응 방식을 보고 판단하기도 한다.",
+    "caution": null,
+    "source": "Baumeister 외 2001",
+    "signalTypes": [
+      "negative_review_no_reply",
+      "complaint_improve"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-trust-05",
+    "layer": "선택",
+    "principle": "권위",
+    "principleEn": "Authority",
+    "category": "신뢰와 사회적 증거",
+    "strength": "강함",
+    "core": [
+      "전문성 신호",
+      "판단 위임"
+    ],
+    "apply": [
+      "자격·수상·인증",
+      "구체 수치"
+    ],
+    "examples": {
+      "음식점": "원산지·셰프 경력·방송 출연",
+      "카페": "원두 산지·바리스타 자격",
+      "헬스장": "트레이너 자격·공식 센터",
+      "스터디카페": "공기질·소음 관리 수치"
+    },
+    "signals": [
+      "소개글 내 근거·수치 부재"
+    ],
+    "actions": [
+      "자격·수상·인증",
+      "구체 수치"
+    ],
+    "description": "전문성의 신호가 있으면 사람들은 판단을 위임한다(Cialdini).",
+    "placeApplication": "헬스장의 트레이너 자격·전공, 장비 공식 센터 인증, 스터디카페의 공기질 관리 수치 같은 구체적 근거. 파이어짐 소개글의 ‘체육 전공 8명’이 이런 사례다.",
+    "caution": null,
+    "source": "Cialdini",
+    "signalTypes": [
+      "intro_no_evidence",
+      "strength_promotion"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-price-01",
+    "layer": "선택",
+    "principle": "손실 회피·프레이밍",
+    "principleEn": "Loss Aversion / Framing",
+    "category": "가격 인식",
+    "strength": "강함",
+    "core": [
+      "손실 2배 체감",
+      "표현 방식 효과"
+    ],
+    "apply": [
+      "'놓치면 손해' 프레이밍",
+      "묶음 절약액 표기"
+    ],
+    "examples": {
+      "음식점": "세트 절약액 표시",
+      "카페": "쿠폰 만료 안내",
+      "헬스장": "단기권 반복 vs 장기권",
+      "스터디카페": "정액권 절약액"
+    },
+    "signals": [],
+    "actions": [
+      "'놓치면 손해' 프레이밍",
+      "묶음 절약액 표기"
+    ],
+    "description": "사람은 같은 크기의 이익보다 손실을 약 두 배 크게 느끼고, 같은 내용도 표현 방식에 따라 반응이 달라진다(Kahneman & Tversky, 1979).",
+    "placeApplication": "‘3개월권 10% 할인’보다 ‘1개월권으로 세 번 끊으면 ○○원 더 내요’가 더 강하게 작용할 수 있다.",
+    "caution": "과하면 압박으로 느껴져 심리적 반발을 일으킨다",
+    "source": "Kahneman & Tversky 1979",
+    "signalTypes": [
+      "price_options_few",
+      "retention"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-price-02",
+    "layer": "선택",
+    "principle": "선결제·정액제 편향",
+    "principleEn": "Flat-rate Bias",
+    "category": "가격 인식",
+    "strength": "강함",
+    "core": [
+      "이용량 과대 예측",
+      "선결제 선호",
+      "미사용 불안"
+    ],
+    "apply": [
+      "선결제·정기권",
+      "미사용 불안 해소"
+    ],
+    "examples": {
+      "음식점": "선불 충전·식권",
+      "카페": "선불 카드·구독",
+      "헬스장": "일시정지 제도",
+      "스터디카페": "기간권 환불 규정"
+    },
+    "signals": [
+      "일시정지·환불·유효기간 안내 부재"
+    ],
+    "actions": [
+      "선결제·정기권",
+      "미사용 불안 해소"
+    ],
+    "description": "사람들은 실제 이용량보다 많이 쓸 거라 예상하고 정액제를 고른다. 미국 헬스장 연구에서 월회원권 이용자는 실제 방문 횟수로 따지면 회당 결제보다 훨씬 비싸게 내고 있었다(DellaVigna & Malmendier, 2006, ‘Paying not to go to the gym’).",
+    "placeApplication": "장기권이 매출의 핵심인 이유이자, ‘안 가게 되면 아깝다’는 불안이 가입을 망설이게 하는 이유. 일시정지 제도나 환불 규정을 명시하면 불안이 줄어든다.",
+    "caution": null,
+    "source": "DellaVigna & Malmendier 2006",
+    "signalTypes": [
+      "refund_info_missing",
+      "retention"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-price-03",
+    "layer": "선택",
+    "principle": "가격-품질 추론",
+    "principleEn": "Price-Quality Inference",
+    "category": "가격 인식",
+    "strength": "중간",
+    "core": [
+      "가격 = 품질 추정",
+      "저가 의심"
+    ],
+    "apply": [
+      "저가 이유 설명",
+      "품질 근거 병기"
+    ],
+    "examples": {
+      "음식점": "저가 메뉴 재료 설명",
+      "카페": "저가 커피 원두 설명",
+      "헬스장": "저가 헬스 시설 근거",
+      "스터디카페": "포함 혜택 명시"
+    },
+    "signals": [
+      "'가성비' 高 · 품질 키워드 低"
+    ],
+    "actions": [
+      "저가 이유 설명",
+      "품질 근거 병기"
+    ],
+    "description": "정보가 부족하면 사람은 가격으로 품질을 추정한다. 너무 싸면 오히려 의심받을 수 있다.",
+    "placeApplication": "저가 전략이라면 ‘왜 싼지’를 설명해야 한다. 카공족처럼 ‘24시간 5,900원’과 ‘고급 커피 무제한’을 함께 적으면 저가의 의심을 품질 근거로 상쇄한다. 실제로 카공족은 ‘가성비가 좋아요’ 선택 비율이 매우 높았다.",
+    "caution": null,
+    "source": null,
+    "signalTypes": [
+      "price_keyword_high_quality_low",
+      "price_keyword_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-price-04",
+    "layer": "선택",
+    "principle": "끝자리 가격",
+    "principleEn": "Left-digit Effect",
+    "category": "가격 인식",
+    "strength": "강함",
+    "core": [
+      "왼쪽 자리 인식",
+      "59,000 < 60,000"
+    ],
+    "apply": [
+      "경계 아래 가격 책정"
+    ],
+    "examples": {
+      "음식점": "9,900원 메뉴",
+      "카페": "4,900원 음료",
+      "헬스장": "59,000원 월권",
+      "스터디카페": "99,000원 기간권"
+    },
+    "signals": [],
+    "actions": [
+      "경계 아래 가격 책정"
+    ],
+    "description": "사람은 가격의 왼쪽 자리를 중심으로 인식해서 60,000원보다 59,000원을 훨씬 싸게 느낀다(Thomas & Morwitz, 2005).",
+    "placeApplication": "이용권 가격 설정 시 왼쪽 자리가 바뀌는 경계 바로 아래로 책정.",
+    "caution": null,
+    "source": "Thomas & Morwitz 2005",
+    "signalTypes": [
+      "price_keyword_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-experience-01",
+    "layer": "선택",
+    "principle": "피크엔드 법칙",
+    "principleEn": "Peak-End Rule",
+    "category": "경험과 기억",
+    "strength": "강함",
+    "core": [
+      "절정 순간",
+      "마지막 순간",
+      "기억 기반 리뷰"
+    ],
+    "apply": [
+      "절정 순간 설계",
+      "마무리 경험"
+    ],
+    "examples": {
+      "음식점": "서비스 디저트·배웅",
+      "카페": "마지막 인사·리필",
+      "헬스장": "첫 상담·첫 PT",
+      "스터디카페": "퇴실 인사·정돈 상태"
+    },
+    "signals": [],
+    "actions": [
+      "절정 순간 설계",
+      "마무리 경험"
+    ],
+    "description": "사람은 경험 전체의 평균이 아니라 가장 강렬했던 순간과 마지막 순간으로 경험을 기억한다(Kahneman 외, 1993).",
+    "placeApplication": "리뷰는 이 기억을 바탕으로 쓰인다. 헬스장의 첫 상담·첫 PT, 스터디카페의 퇴실 순간(인사, 정리 상태)이 리뷰 내용을 좌우한다.",
+    "caution": null,
+    "source": "Kahneman 외 1993",
+    "signalTypes": [
+      "review_request",
+      "retention",
+      "complaint_improve"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-experience-02",
+    "layer": "선택",
+    "principle": "기대 불일치",
+    "principleEn": "Expectation-Disconfirmation",
+    "category": "경험과 기억",
+    "strength": "강함",
+    "core": [
+      "기대 대비 만족",
+      "과장 홍보 역효과"
+    ],
+    "apply": [
+      "사진·소개글 현실화",
+      "마케팅/비마케팅 구분"
+    ],
+    "examples": {
+      "음식점": "메뉴 사진 vs 실제 양",
+      "카페": "매장 사진 vs 실제 혼잡도",
+      "헬스장": "기구 사진 vs 실제 대기",
+      "스터디카페": "좌석 사진 vs 실제 소음"
+    },
+    "signals": [
+      "소개글 강조점 ↔ 키워드 비율 불일치"
+    ],
+    "actions": [
+      "사진·소개글 현실화",
+      "마케팅/비마케팅 구분"
+    ],
+    "description": "만족은 경험의 절대 수준이 아니라 기대와의 차이로 결정된다(Oliver, 1980).",
+    "placeApplication": "사진과 소개글이 실제보다 과하면 오히려 불만 리뷰가 는다. 불만의 원인이 ‘기대를 너무 높인 홍보’라면 마케팅 문제, ‘실제 서비스 부족’이라면 비마케팅 문제로 분류한다.",
+    "caution": null,
+    "source": "Oliver 1980",
+    "signalTypes": [
+      "expectation_gap",
+      "complaint_improve"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-experience-03",
+    "layer": "선택",
+    "principle": "처리 유창성",
+    "principleEn": "Processing Fluency",
+    "category": "경험과 기억",
+    "strength": "강함",
+    "core": [
+      "첫인상",
+      "쉬운 정보 신뢰"
+    ],
+    "apply": [
+      "대표 사진 첫 장",
+      "소개글 첫 두 줄"
+    ],
+    "examples": {
+      "음식점": "대표 메뉴 클로즈업",
+      "카페": "공간·음료 대표 컷",
+      "헬스장": "기구·공간 전경",
+      "스터디카페": "좌석·조명 컷"
+    },
+    "signals": [
+      "소개글 앞부분 인사말·일반론"
+    ],
+    "actions": [
+      "대표 사진 첫 장",
+      "소개글 첫 두 줄"
+    ],
+    "description": "사람은 쉽게 이해되고 보기 좋은 정보를 더 신뢰하고 선호한다. 웹 페이지 인상은 아주 짧은 순간에 형성된다는 연구도 있다(Lindgaard 외, 2006).",
+    "placeApplication": "대표 사진 첫 장과 소개글 첫 두 줄이 사실상 전부다. ‘펼쳐보기’ 앞부분에서 핵심을 말하는지가 진단 포인트.",
+    "caution": null,
+    "source": "Lindgaard 외 2006",
+    "signalTypes": [
+      "intro_weak",
+      "photo_weak",
+      "new_customer"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-experience-04",
+    "layer": "선택",
+    "principle": "단순 노출 효과",
+    "principleEn": "Mere Exposure",
+    "category": "경험과 기억",
+    "strength": "강함",
+    "core": [
+      "반복 노출",
+      "친숙함 → 호감"
+    ],
+    "apply": [
+      "소식 꾸준한 발행",
+      "오프라인 노출"
+    ],
+    "examples": {
+      "음식점": "신메뉴·오늘의 메뉴 소식",
+      "카페": "시즌 음료 소식",
+      "헬스장": "운동 팁·이벤트 소식",
+      "스터디카페": "시험 일정·좌석 현황 소식"
+    },
+    "signals": [
+      "소식 발행 중단"
+    ],
+    "actions": [
+      "소식 꾸준한 발행",
+      "오프라인 노출"
+    ],
+    "description": "자주 본 대상일수록 호감이 생긴다(Zajonc, 1968).",
+    "placeApplication": "소식 탭의 꾸준한 발행, 동네 오프라인 노출.",
+    "caution": null,
+    "source": "Zajonc 1968",
+    "signalTypes": [
+      "news_inactive",
+      "new_customer"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-retention-01",
+    "layer": "선택",
+    "principle": "목표 가속·부여된 진행",
+    "principleEn": "Goal Gradient / Endowed Progress",
+    "category": "행동 유지와 재방문",
+    "strength": "강함",
+    "core": [
+      "목표 근접 가속",
+      "미리 채운 진행"
+    ],
+    "apply": [
+      "적립·스탬프",
+      "진행 상황 표시",
+      "첫 방문 적립"
+    ],
+    "examples": {
+      "음식점": "방문 스탬프",
+      "카페": "10잔 쿠폰 2칸 선적립",
+      "헬스장": "출석 스탬프",
+      "스터디카페": "누적 시간 표시"
+    },
+    "signals": [],
+    "actions": [
+      "적립·스탬프",
+      "진행 상황 표시",
+      "첫 방문 적립"
+    ],
+    "description": "목표에 가까워질수록 노력이 빨라지고(Kivetz 외, 2006), 이미 진행된 것처럼 느끼게 하면 완주율이 올라간다. 세차장 스탬프 연구에서 10칸 카드보다 ‘12칸 중 2칸을 미리 찍어준 카드’의 완주율이 훨씬 높았다(Nunes & Drèze, 2006).",
+    "placeApplication": "스터디카페 정액권의 누적 사용 시간 표시, 헬스장 출석 스탬프, 첫 방문 시 1회 적립으로 시작하기.",
+    "caution": null,
+    "source": "Kivetz 외 2006 · Nunes & Drèze 2006",
+    "signalTypes": [
+      "retention"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-retention-02",
+    "layer": "선택",
+    "principle": "새 출발 효과",
+    "principleEn": "Fresh Start Effect",
+    "category": "행동 유지와 재방문",
+    "strength": "강함",
+    "core": [
+      "새해·월초·월요일",
+      "목표 시작 시점"
+    ],
+    "apply": [
+      "시작 시점 프로모션"
+    ],
+    "examples": {
+      "음식점": "새해·월초 신메뉴",
+      "카페": "월요일 모닝 메뉴",
+      "헬스장": "1월·월초 등록",
+      "스터디카페": "개강·시험 전"
+    },
+    "signals": [],
+    "actions": [
+      "시작 시점 프로모션"
+    ],
+    "description": "사람들은 새해, 새 달, 월요일, 생일 같은 시점에 목표를 시작하려는 경향이 있고, 실제로 이런 시점에 헬스장 방문이 는다(Dai, Milkman & Riis, 2014).",
+    "placeApplication": "헬스장은 1월·월초, 스터디카페는 개강·시험 기간 시작 전에 맞춘 소식 발행과 프로모션.",
+    "caution": null,
+    "source": "Dai, Milkman & Riis 2014",
+    "signalTypes": [
+      "retention",
+      "promotion_timing"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-retention-03",
+    "layer": "선택",
+    "principle": "상호성",
+    "principleEn": "Reciprocity",
+    "category": "행동 유지와 재방문",
+    "strength": "강함",
+    "core": [
+      "먼저 주기",
+      "보답 심리"
+    ],
+    "apply": [
+      "먼저 제공",
+      "좋은 경험 직후 리뷰 요청"
+    ],
+    "examples": {
+      "음식점": "서비스 반찬·음료",
+      "카페": "시음·샘플",
+      "헬스장": "무료 체험",
+      "스터디카페": "무료 음료·간식"
+    },
+    "signals": [],
+    "actions": [
+      "먼저 제공",
+      "좋은 경험 직후 리뷰 요청"
+    ],
+    "description": "먼저 받으면 돌려주고 싶어진다(Cialdini).",
+    "placeApplication": "무료 체험, 무료 음료. 리뷰 요청도 좋은 경험을 준 직후에 할 때 응답률이 높다.",
+    "caution": "‘감사 표시’와 ‘리뷰 대가’를 구분할 것. 대가성 리뷰는 가드레일 위반",
+    "source": "Cialdini",
+    "signalTypes": [
+      "review_request",
+      "review_count_low"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-pressure-01",
+    "layer": "선택",
+    "principle": "심리적 반발",
+    "principleEn": "Reactance",
+    "category": "반발과 압박",
+    "strength": "강함",
+    "core": [
+      "자유 침해 반발",
+      "압박 역효과"
+    ],
+    "apply": [
+      "권유·압박 절제",
+      "'강요 없음' 차별화"
+    ],
+    "examples": {
+      "음식점": "추가 주문 권유 절제",
+      "카페": "이용 시간 제한 안내 톤",
+      "헬스장": "PT 권유 절제",
+      "스터디카페": "규칙 공지 톤"
+    },
+    "signals": [
+      "'과도한 권유 없음'류 키워드 低"
+    ],
+    "actions": [
+      "권유·압박 절제",
+      "'강요 없음' 차별화"
+    ],
+    "description": "선택의 자유를 침해받는다고 느끼면 사람은 오히려 반대로 행동한다(Brehm, 1966).",
+    "placeApplication": "헬스장의 과한 PT 권유가 대표 사례. 수집 데이터에서 ‘과도한 권유가 없어요’ 선택 비율이 파이어짐 11%, 워라밸 5%, 에이블짐 1%로 차이가 났다. 고객이 굳이 이 키워드를 고른다는 건 업계 전반에 권유 부담이 있다는 신호이며, 그래서 차별점이 될 수 있다.",
+    "caution": null,
+    "source": "Brehm 1966",
+    "signalTypes": [
+      "pressure_keyword_low",
+      "strength_promotion"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  },
+  {
+    "id": "K-pressure-02",
+    "layer": "선택",
+    "principle": "희소성·긴급성",
+    "principleEn": "Scarcity / Urgency",
+    "category": "반발과 압박",
+    "strength": "중간",
+    "core": [
+      "한정 가치 상승",
+      "가짜 한정 역효과"
+    ],
+    "apply": [
+      "실제 한정만 표기"
+    ],
+    "examples": {
+      "음식점": "한정 수량 메뉴",
+      "카페": "시즌 한정 음료",
+      "헬스장": "선착순 등록 혜택",
+      "스터디카페": "잔여 좌석 표시"
+    },
+    "signals": [],
+    "actions": [
+      "실제 한정만 표기"
+    ],
+    "description": "귀하거나 곧 사라진다고 느끼면 가치를 더 높게 평가한다(Worchel 외, 1975).",
+    "placeApplication": "실제 한정(선착순 좌석, 실제 마감일)일 때만 사용.",
+    "caution": "반복되거나 가짜로 느껴지면 신뢰를 잃고 반발을 부른다",
+    "source": "Worchel 외 1975",
+    "signalTypes": [
+      "promotion_timing"
+    ],
+    "sourceFile": "marketing_psychology_keywords_all_industries.html"
+  }
+]
