@@ -1,6 +1,6 @@
 import type { CollectedPlace, Store } from "@/types";
 
-// 교체 가능한 데이터 공급자. 엔진·화면은 이 인터페이스만 알고, 어디서 온 데이터인지 모른다.
+// 교체 가능한 데이터 공급자. 화면·지표 계산 모듈은 이 인터페이스만 알고, 어디서 온 데이터인지 모른다.
 export interface PlaceDataProvider {
   readonly name: string;
 

@@ -132,16 +132,23 @@
 ```
 
 ### PlaceDataProvider (교체 가능한 데이터 공급자)
+화면·지표 계산 모듈은 이 인터페이스만 알고, 데이터가 어디서 왔는지 모른다. (`lib/providers/types.ts`)
 ```ts
 interface PlaceDataProvider {
-  getStore(placeId: string): Promise<Store>;
-  getKeywordStats(placeId: string): Promise<KeywordStat[]>;
-  getReviews(placeId: string, limit: number): Promise<Review[]>;
-  getCompetitors(placeId: string): Promise<Store[]>; // 사용자 지정 링크 기반
+  readonly name: string;
+  // 한 매장의 수집 결과(스냅샷 한 장). 실패하면 throw → 폴백 체인이 다음 공급자로
+  collect(placeId: string): Promise<CollectedPlace>;
+  // 사용자가 지정한 경쟁 매장. 지정이 없으면 빈 배열
+  getCompetitors(store: Store): Promise<CollectedPlace[]>;
 }
+
+type CollectedPlace = {
+  store: Store; keywordStats: KeywordStat[]; reviews: Review[];
+  collectedAt: string; source: "crawler" | "octoparse" | "manual" | "mock" | "demo";
+};
 ```
-- `MockProvider`: 실제와 동일한 스키마의 가짜 데이터 (개발 기본값, `USE_MOCK_DATA=true`)
-- `DemoProvider`: 미리 수집한 매장 JSON (`data/places/`) — 시연 모드
+- `MockProvider`: `data/places/*.json`의 가짜 데이터 (개발 기본값, `USE_MOCK_DATA=true`)
+- `DemoProvider`: 미리 수집한 실제 매장 JSON — 시연 모드
 - `CrawlerProvider`: FastAPI로 감싼 Python 수집기 호출
 - `ManualUploadProvider`: 엑셀/CSV 업로드 (수작업 샘플, 사장님 제공 리뷰)
 - 순서: Demo → Crawler → Mock, 실패하거나 시간 초과 시 다음 공급자로
@@ -155,47 +162,11 @@ interface PlaceDataProvider {
 | POST | `/api/chat` | `{ placeId, message, history }` | 스트리밍 답변 + `{ intent, knowledgeIds, cards }` |
 | POST | `/api/answers` | `{ placeId, cardId, answer }` | `{ ok, nextCards }` |
 
-## 9. 공통 데이터 타입 (`types/`)
-```ts
-type Industry = "음식점" | "카페" | "공방" | "헬스장" | "스터디카페";
-
-type Store = {
-  placeId: string; name: string; category: string; industry: Industry; address?: string;
-  rating?: number; visitorReviewCount?: number; blogReviewCount?: number;
-  hasBookingTab?: boolean; tabs: string[]; amenities: string[]; intro?: string;
-  representativeKeywords: string[]; coupons: string[]; photoUrl?: string;
-};
-
-type KeywordStat = { keyword: string; count: number; ratio: number }; // ratio = count / visitorReviewCount
-
-type Review = {
-  visitedDate?: string; visitCount?: number; authType?: "영수증" | "예약" | "기타";
-  votedKeywords: string[]; photoCount?: number; hasOwnerReply?: boolean; ownerReply?: string;
-  body: string; source: "crawler" | "octoparse" | "manual" | "mock";
-}; // 작성자 닉네임·프로필·사진 파일 저장 금지
-
-type Finding = { // 점수·가중치·우선순위 필드 없음, 사실만 담음
-  id: string; type: "높음" | "낮음" | "정보";
-  keyword?: string; mine?: number; competitorAvg?: number; gapPp?: number;
-  category: "마케팅" | "비마케팅"; signalType: string; needsOwnerCheck: boolean;
-};
-
-type Card =
-  | { id: string; kind: "발견"; text: string; findingId: string }
-  | { id: string; kind: "근거"; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" }
-  | { id: string; kind: "확인"; text: string; buttons: string[] };
-
-type KnowledgeChunk = {
-  id: string; layer: "노출" | "선택"; principle: string; category: string;
-  strength: "강함" | "중간" | "혼재"; core: string[]; apply: string[];
-  examples: Partial<Record<Industry, string>>; signals: string[];
-  actions: string[]; caution?: string; source?: string; signalTypes: string[];
-  principleEn?: string; description?: string; placeApplication?: string; sourceFile?: string;
-};
-
-type OwnerAnswer = { placeId: string; cardId: string; question: string; answer: string; answeredAt: string };
-type Snapshot = { snapshotId: string; placeId: string; collectedAt: string; store: Store; keywordStats: KeywordStat[] };
-```
+## 9. 공통 데이터 타입
+- 기준은 `types/index.ts` 한 곳이다. 문서에 복사하지 않는다. 바꿀 때는 팀에 먼저 공유한다.
+- 주요 타입: `Store`, `KeywordStat`, `Review`, `CollectedPlace`, `Snapshot`, `Finding`, `Card`, `KnowledgeChunk`, `Guardrail`, `OwnerAnswer`, `Job`
+- `Finding`에는 점수·가중치·우선순위 필드를 두지 않는다. `Card`는 모두 `id`를 가진다(`/api/answers`의 `cardId`).
+- 리뷰 작성자 닉네임·프로필·사진 파일은 어떤 타입에도 넣지 않는다.
 
 ## 10. 지표 계산 규칙 (`lib/metrics/`, 점수화·LLM 사용 금지)
 - 계산하는 것은 사실(수치)뿐이다. 종합 점수, 가중치, 순위, 우선순위 판단은 만들지 않는다.
@@ -262,16 +233,20 @@ type Snapshot = { snapshotId: string; placeId: string; collectedAt: string; stor
 - 모바일 화면(폭 360px 이상)에서도 레이아웃이 깨지지 않을 것
 - 수집·LLM 실패 시에도 화면이 멈추지 않고 안내 문구 표시
 
-## 13. 개발 요청 순서 (단계별로 하나씩 요청)
-1. 프로젝트 생성 + 디자인 토큰 (Next.js, Tailwind, shadcn/ui, Pretendard, Figma 색상)
-2. 정적 화면: `/`, `/guide`, `/result/[placeId]`를 `data/places/sample.json` Mock 데이터로 (API 연결 없이)
-3. API와 화면 흐름: `/api/analyze`, `/api/jobs`, `/api/places`, 분석 중 화면, URL 검증 안내
-4. `types/`와 `PlaceDataProvider` + `MockProvider`/`DemoProvider`, Mock 데이터 (음식점·카페·공방·헬스장·스터디카페 각 3곳)
-5. 지표 계산 모듈 (`lib/metrics/`, 점수화 없이 비율·차이·정보 확인, 단위 테스트)
-6. 지식베이스: `data/knowledge/principles.json`·`guardrails.json`을 읽어 `signalTypes`·업종 태그로 검색하는 `lib/knowledge/` (원본 HTML은 `docs/knowledge/`)
-7. 리뷰 분석 문단 생성 (`lib/llm/`)
-8. 챗봇 `/api/chat`: 의도 분류, RAG, 스트리밍, 근거 카드 검증, 확인 카드
-9. `/api/answers`: 사장님 답변 저장과 다음 카드 반영
-10. 실제 데이터 연결: Python 수집기를 FastAPI로 감싸 `CrawlerProvider` 연결, 실패 시 폴백
+## 13. 개발 요청 순서 (WORKFLOW.md 6장과 같은 번호, 한 번에 한 단계씩)
+1. 프로젝트 생성 + 디자인 토큰
+2. 정적 화면 (Mock 데이터)
+   - 2-1. `/`, `/guide`
+   - 2-2. `/result/[placeId]` (02 분석 결과 + 03·04 챗봇 화면, 스크롤 시 가게 카드 축소)
+3. API와 화면 흐름 (데이터 공급자 포함)
+   - 3-1. `PlaceDataProvider` + `MockProvider`/`DemoProvider`, 다섯 업종 Mock 데이터
+   - 3-2. `/api/analyze`, `/api/jobs`, `/api/places`, 분석 중 화면, URL 검증
+4. 지표 계산 모듈 (`lib/metrics/`, 점수화 없음, 단위 테스트)
+5. 챗봇 (RAG + LLM)
+   - 5-1. 지식 검색 (`lib/knowledge/`, `principles.json`·`guardrails.json`)
+   - 5-2. 리뷰 분석 문단 (`lib/llm/`)
+   - 5-3. `/api/chat`: 의도 분류, 스트리밍, 근거 카드 검증, 확인 카드
+   - 5-4. `/api/answers`: 사장님 답변 저장과 다음 카드 반영
+6. 실제 데이터 연결 (FastAPI 수집기 → `CrawlerProvider`, 실패 시 폴백)
 
 각 단계 완료 기준: 실행해서 화면·API가 동작하고, 이전 단계 기능이 깨지지 않을 것 → git commit 후 다음 단계

@@ -126,37 +126,11 @@ place-ai/
 
 ---
 
-## 5. 공통 데이터 타입 (팀 전원이 먼저 합의)
+## 5. 공통 데이터 타입
 
-`types/`의 형식만 처음에 확정해두면 각자 Mock으로 작업하다가 나중에 합쳐도 맞물린다.
-
-```ts
-type Store = {
-  placeId: string; name: string; category: string; address?: string;
-  rating?: number; visitorReviewCount?: number; blogReviewCount?: number;
-  hasBookingTab?: boolean; amenities: string[]; intro?: string;
-  representativeKeywords: string[]; industry: "음식점" | "카페" | "공방" | "헬스장" | "스터디카페";
-};
-
-type KeywordStat = { keyword: string; count: number; ratio: number }; // ratio = count / visitorReviewCount
-
-type Finding = { // 점수·가중치·우선순위 없음
-  id: string; type: "높음" | "낮음" | "정보"; keyword?: string;
-  mine?: number; competitorAvg?: number; gapPp?: number;
-  category: "마케팅" | "비마케팅"; signalType: string; needsOwnerCheck: boolean;
-};
-
-type Card =
-  | { kind: "발견"; text: string; findingId: string }
-  | { kind: "근거"; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" }
-  | { kind: "확인"; text: string; buttons: string[] };
-
-type KnowledgeChunk = {
-  id: string; principle: string; category: string; strength: "강함" | "중간" | "혼재";
-  core: string[]; apply: string[]; examples: Partial<Record<Store["industry"], string>>;
-  signals: string[]; actions: string[]; caution?: string; source?: string; signalTypes: string[];
-}; // 전체 필드는 types/index.ts, 데이터는 data/knowledge/principles.json
-```
+- 기준은 `types/index.ts` 한 곳이다. 문서에 복사하지 않는다. 바꿀 때는 팀에 먼저 공유한다.
+- 주요 타입: `Store`, `KeywordStat`, `Review`, `CollectedPlace`, `Snapshot`, `Finding`, `Card`, `KnowledgeChunk`, `Guardrail`, `OwnerAnswer`, `Job`
+- 세부 규칙은 PROJECT.md 9장 참고
 
 ---
 
@@ -184,7 +158,7 @@ data/places/sample.json의 가짜 데이터로 채워줘. 아직 API 연결은 �
 ```
 완료 기준: 세 화면이 Figma와 같은 모습으로 보임, 스크롤 시 가게 카드 축소
 
-### 3단계 · API와 화면 흐름 연결
+### 3단계 · API와 화면 흐름 (데이터 공급자 포함)
 ```
 POST /api/analyze: URL에서 place_id를 추출하고 job을 만들어줘.
 data/places에 해당 매장 JSON이 있으면 바로 완료 처리하고, 없으면 "수집 필요" 상태로 둬.

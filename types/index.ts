@@ -9,13 +9,16 @@ export type Store = {
   name: string;
   category: string;
   address?: string;
+  photoUrl?: string; // 가게 카드 사진 (Figma 02)
   rating?: number;
   visitorReviewCount?: number;
   blogReviewCount?: number;
   hasBookingTab?: boolean;
+  tabs: string[]; // 플레이스 탭 목록 (예약 탭 유무 등)
   amenities: string[];
   intro?: string;
   representativeKeywords: string[];
+  coupons: string[];
   industry: Industry;
 };
 
@@ -27,7 +30,7 @@ export type Review = {
   visitedDate?: string;
   createdDate?: string;
   visitCount?: number;
-  authType?: "영수증" | "예약";
+  authType?: "영수증" | "예약" | "기타";
   votedKeywords: string[];
   photoCount?: number;
   hasOwnerReply?: boolean;
@@ -59,9 +62,9 @@ export type Finding = {
 };
 
 export type Card =
-  | { kind: "발견"; text: string; findingId: string }
-  | { kind: "근거"; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" }
-  | { kind: "확인"; text: string; buttons: string[] };
+  | { id: string; kind: "발견"; text: string; findingId: string }
+  | { id: string; kind: "근거"; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" }
+  | { id: string; kind: "확인"; text: string; buttons: string[] };
 
 // data/knowledge/principles.json 의 한 항목 (원본: docs/knowledge/*.html)
 export type KnowledgeChunk = {
@@ -88,7 +91,7 @@ export type KnowledgeChunk = {
 export type Guardrail = { id: string; rule: string; detail: string };
 
 // 분석 작업(job) 상태. /api/analyze → /api/jobs/[jobId]
-export type JobStatus = "queued" | "collecting" | "diagnosing" | "done" | "failed";
+export type JobStatus = "queued" | "collecting" | "analyzing" | "done" | "failed";
 
 export type Job = {
   jobId: string;
@@ -96,4 +99,16 @@ export type Job = {
   status: JobStatus;
   error?: string;
   createdAt: string;
+};
+
+// 시점별 비교용 저장 단위. CollectedPlace를 그대로 저장한 것
+export type Snapshot = CollectedPlace & { snapshotId: string };
+
+// 확인 필요 카드에 대한 사장님 답변 (/api/answers)
+export type OwnerAnswer = {
+  placeId: string;
+  cardId: string;
+  question: string;
+  answer: string;
+  answeredAt: string; // ISO 8601
 };

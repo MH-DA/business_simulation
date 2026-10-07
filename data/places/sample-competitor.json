@@ -8,9 +8,11 @@
     "visitorReviewCount": 400,
     "blogReviewCount": 40,
     "hasBookingTab": true,
+    "tabs": ["홈", "소식", "예약", "리뷰", "사진", "정보"],
     "amenities": ["주차", "샤워시설", "PT"],
     "intro": "1:1 PT와 그룹 수업이 강한 헬스장입니다.",
     "representativeKeywords": ["노원헬스장", "PT"],
+    "coupons": [],
     "industry": "헬스장"
   },
   "keywordStats": [
