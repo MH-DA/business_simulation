@@ -1,0 +1,133 @@
+{
+  "store": {
+    "placeId": "sample-cafe-001",
+    "name": "카페 온유",
+    "category": "카페 / 디저트",
+    "address": "서울특별시 성동구 성수동 (가짜 주소)",
+    "rating": 4.7,
+    "visitorReviewCount": 180,
+    "blogReviewCount": 42,
+    "hasBookingTab": false,
+    "tabs": [
+      "홈",
+      "소식",
+      "메뉴",
+      "리뷰",
+      "사진",
+      "정보"
+    ],
+    "amenities": [
+      "무선 인터넷",
+      "포장",
+      "남/녀 화장실 구분"
+    ],
+    "intro": "성수동 골목의 작은 핸드드립 카페입니다. 직접 구운 디저트와 함께 조용히 쉬어 가세요.",
+    "representativeKeywords": [
+      "성수 카페",
+      "핸드드립",
+      "디저트",
+      "조용한 카페"
+    ],
+    "coupons": [],
+    "industry": "카페"
+  },
+  "keywordStats": [
+    {
+      "keyword": "커피가 맛있어요",
+      "count": 130,
+      "ratio": 0.72
+    },
+    {
+      "keyword": "분위기가 차분해요",
+      "count": 112,
+      "ratio": 0.62
+    },
+    {
+      "keyword": "친절해요",
+      "count": 95,
+      "ratio": 0.53
+    },
+    {
+      "keyword": "디저트가 맛있어요",
+      "count": 76,
+      "ratio": 0.42
+    },
+    {
+      "keyword": "대화하기 좋아요",
+      "count": 40,
+      "ratio": 0.22
+    },
+    {
+      "keyword": "메뉴 설명이 자세해요",
+      "count": 14,
+      "ratio": 0.08
+    },
+    {
+      "keyword": "좌석이 넉넉해요",
+      "count": 11,
+      "ratio": 0.06
+    },
+    {
+      "keyword": "주차하기 편해요",
+      "count": 4,
+      "ratio": 0.02
+    }
+  ],
+  "reviews": [
+    {
+      "visitedDate": "2026-09-27",
+      "createdDate": "2026-09-27",
+      "visitCount": 2,
+      "authType": "영수증",
+      "votedKeywords": [
+        "커피가 맛있어요",
+        "분위기가 차분해요"
+      ],
+      "photoCount": 2,
+      "hasOwnerReply": true,
+      "body": "핸드드립 향이 정말 좋아요. 조용해서 책 읽기 좋았어요.",
+      "source": "mock",
+      "ownerReply": "감사합니다. 또 편하게 쉬어 가세요."
+    },
+    {
+      "visitedDate": "2026-09-21",
+      "createdDate": "2026-09-21",
+      "visitCount": 1,
+      "authType": "영수증",
+      "votedKeywords": [
+        "디저트가 맛있어요"
+      ],
+      "photoCount": 1,
+      "hasOwnerReply": false,
+      "body": "디저트는 맛있었는데 주말 오후엔 자리가 없어서 한참 기다렸어요.",
+      "source": "mock"
+    },
+    {
+      "visitedDate": "2026-09-15",
+      "createdDate": "2026-09-15",
+      "visitCount": 1,
+      "authType": "영수증",
+      "votedKeywords": [
+        "친절해요"
+      ],
+      "photoCount": 0,
+      "hasOwnerReply": false,
+      "body": "직원분이 친절했어요. 메뉴판에 원두 설명이 조금 더 있으면 좋겠어요.",
+      "source": "mock"
+    },
+    {
+      "visitedDate": "2026-09-08",
+      "createdDate": "2026-09-08",
+      "visitCount": 3,
+      "authType": "영수증",
+      "votedKeywords": [
+        "커피가 맛있어요",
+        "친절해요"
+      ],
+      "photoCount": 0,
+      "hasOwnerReply": false,
+      "body": "주차 안내를 찾기 어려웠지만 커피는 늘 만족스러워요.",
+      "source": "mock"
+    }
+  ]
+}

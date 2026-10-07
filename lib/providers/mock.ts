@@ -4,7 +4,7 @@ import type { CollectedPlace, Store } from "@/types";
 import type { PlaceDataProvider } from "./types";
 
 const PLACES_DIR = path.join(process.cwd(), "data", "places");
-const FALLBACK_FILE = "sample.json";
+const FALLBACK_FILE = "sample-cafe.json"; // Figma 시안과 같은 카페 예시
 
 type PlaceFile = Omit<CollectedPlace, "collectedAt" | "source">;
 

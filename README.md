@@ -31,11 +31,22 @@ docs/
   knowledge/  지식 원본 HTML (사람이 읽는 원본)
 ```
 
+## 실행
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
+
+- 시작 화면에 네이버 플레이스 링크를 넣으면 분석 중 → 결과 화면으로 이동한다. (지금은 모든 매장이 Mock 데이터)
+- 바로 보기: `/result/sample-cafe-001` (Figma 예시 카페), `/result/sample-gym-001` (헬스장 샘플)
+- Next.js 16 + Cache Components 사용. 코드 작성 전 `AGENTS.md` 안내대로 `node_modules/next/dist/docs/`를 확인한다.
+
 ## 진행 상황
 
 - [x] 폴더 뼈대, 공통 타입, Provider 인터페이스, MockProvider, 샘플 데이터
-- [ ] 1단계 프로젝트 생성과 디자인 토큰
-- [ ] 2단계 정적 화면
+- [x] 1단계 프로젝트 생성과 디자인 토큰
+- [x] 2단계 정적 화면 (챗봇은 가짜 답변 `lib/mock/chat.ts`)
 - [ ] 3단계 API와 화면 흐름 (데이터 공급자 포함)
 - [ ] 4단계 지표 계산 모듈
 - [ ] 5단계 챗봇 (RAG + LLM)
