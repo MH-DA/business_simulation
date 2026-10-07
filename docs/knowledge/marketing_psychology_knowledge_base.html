@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>소비자 심리 기반 마케팅 지식베이스 — 네이버 플레이스 진단용</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--ink:#1E2A3A;--muted:#5F6B7A;--paper:#FAFBFC;--card:#FFFFFF;--line:#DDE2E8;--row:#F1F4F7;
+--strong:#2E7D5B;--strong-bg:#E4F2EA;--mid:#2F5F9E;--mid-bg:#E3ECF7;--mixed:#A86A12;--mixed-bg:#FBF0DC;--warn:#B23A3A;--warn-bg:#F8E3E3}
+@media (prefers-color-scheme:dark){:root{--ink:#E4E9F0;--muted:#9AA6B4;--paper:#141A22;--card:#19212B;--line:#2C3642;--row:#1B232D;
+--strong:#6CC49A;--strong-bg:#1C3329;--mid:#86AEE6;--mid-bg:#1D2B40;--mixed:#E3B15C;--mixed-bg:#3A2E17;--warn:#E88080;--warn-bg:#3D2020}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.65}
+main{max-width:1080px;margin:0 auto;padding:48px 24px 72px}
+h1{font-size:30px;line-height:1.3;margin:0 0 10px;letter-spacing:-.01em}
+.lead{color:var(--muted);max-width:68ch;margin:0 0 28px}
+.layers{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:40px}
+.layers div{background:var(--card);padding:16px 18px}
+.layers b{display:block;font-size:15px;margin-bottom:2px}
+.layers span{color:var(--muted);font-size:14px}
+.layers .here{box-shadow:inset 3px 0 0 var(--strong)}
+h2{font-size:21px;margin:0}
+.block{margin-bottom:44px}
+.block>h2{margin-bottom:6px}
+.block>p{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.filters button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:5px 14px;border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.filters button:focus-visible,a:focus-visible{outline:2px solid var(--mid);outline-offset:2px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--line)}
+thead th{font-size:13px;font-weight:600;color:var(--muted);background:var(--row)}
+tbody tr:last-child td{border-bottom:none}
+td a{color:var(--ink);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
+td a:hover{border-color:var(--ink)}
+.dim{color:var(--muted)}
+.badge{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.s-strong{color:var(--strong);background:var(--strong-bg)}
+.s-mid{color:var(--mid);background:var(--mid-bg)}
+.s-mixed{color:var(--mixed);background:var(--mixed-bg)}
+.legend{font-size:14px;color:var(--muted);margin-top:12px}
+.cat{margin-top:48px}
+.cat-head{border-top:2px solid var(--ink);padding-top:12px;margin-bottom:16px}
+.cat-head p{margin:2px 0 0;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:20px 22px;margin-bottom:14px;scroll-margin-top:16px}
+.card header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-bottom:12px}
+.card h3{font-size:18px;margin:0}
+.card .en{color:var(--muted);font-size:14px}
+.card .badge{margin-left:auto}
+dl{margin:0;display:grid;grid-template-columns:110px 1fr;gap:8px 16px}
+dt{font-size:13px;font-weight:600;color:var(--muted);padding-top:2px}
+dd{margin:0;max-width:72ch}
+.card[data-hidden]{display:none} tr[data-hidden]{display:none}
+.template{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 22px}
+.template ol{margin:8px 0 0;padding-left:20px}
+.template li{margin-bottom:4px}
+.example{margin-top:14px;padding:14px 16px;background:var(--row);border-radius:6px;font-size:14px}
+.guard{border:1px solid var(--warn);background:var(--warn-bg);border-radius:8px;padding:18px 22px}
+.guard h2{color:var(--warn)}
+.guard ul{margin:10px 0 0;padding-left:20px}
+footer{margin-top:48px;font-size:13px;color:var(--muted)}
+@media (max-width:640px){h1{font-size:24px}.layers{grid-template-columns:1fr}dl{grid-template-columns:1fr}dt{padding-top:6px}.card .badge{margin-left:0}}
+</style>
+</head>
+<body>
+<main>
+<h1>소비자 심리 기반 마케팅 지식베이스</h1>
+<p class="lead">네이버 플레이스 진단 서비스의 RAG에 넣을 마케팅 원리 모음입니다. 스코어링 엔진이 문제를 찾으면, 이 지식이 “왜 그게 고객의 선택에 영향을 주는지”를 설명하는 근거가 됩니다. 원리마다 근거의 강도를 표시해 LLM이 확정된 사실과 해석을 구분해서 말하도록 했습니다.</p>
+
+<div class="layers">
+  <div><b>노출 지식 (SEO)</b><span>어디에, 어떻게 보이느냐 — 대표 키워드, 정보 완성도, 활성도</span></div>
+  <div class="here"><b>선택 지식 (이 문서)</b><span>보인 뒤에 왜 고르느냐 — 소비자 심리와 마케팅 원리</span></div>
+</div>
+
+<section class="block">
+  <h2>한눈에 보기</h2>
+  <p>원리 22개 · 근거 강함 18개, 중간 3개, 혼재 1개. 진단 신호는 수집 데이터로 잡을 수 있는 조건입니다.</p>
+  <div class="filters" role="group" aria-label="근거 강도로 거르기">
+    <button type="button" data-f="all" aria-pressed="true">전체</button>
+    <button type="button" data-f="강함" aria-pressed="false">근거 강함</button>
+    <button type="button" data-f="중간" aria-pressed="false">근거 중간</button>
+    <button type="button" data-f="혼재" aria-pressed="false">근거 혼재</button>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>원리</th><th>분류</th><th>근거</th><th>진단 신호</th></tr></thead>
+    <tbody><tr data-strength="혼재"><td><a href="#p0">선택 과부하</a></td><td>선택과 결정</td><td><span class="badge s-mixed">혼재</span></td><td>가격·메뉴 항목 수가 많은데 ‘요금제가 잘 되어있어요’ 선택 비율이 낮음</td></tr><tr data-strength="강함"><td><a href="#p1">타협 효과·미끼 효과</a></td><td>선택과 결정</td><td><span class="badge s-strong">강함</span></td><td>가격표가 단일 상품이거나 선택지가 두 개뿐임</td></tr><tr data-strength="강함"><td><a href="#p2">기본값 효과</a></td><td>선택과 결정</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p3">앵커링</a></td><td>선택과 결정</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p4">사회적 증거</a></td><td>신뢰와 사회적 증거</td><td><span class="badge s-strong">강함</span></td><td>같은 상권 경쟁 매장 대비 방문자 리뷰 수가 크게 적음</td></tr><tr data-strength="강함"><td><a href="#p5">리뷰 수 휴리스틱</a></td><td>신뢰와 사회적 증거</td><td><span class="badge s-strong">강함</span></td><td>경쟁군과 별점 차이는 작고 리뷰 수 차이는 큼</td></tr><tr data-strength="중간"><td><a href="#p6">너무 완벽한 별점의 역효과</a></td><td>신뢰와 사회적 증거</td><td><span class="badge s-mid">중간</span></td><td>별점 4.9 이상 + 리뷰 수 적음</td></tr><tr data-strength="강함"><td><a href="#p7">부정성 편향</a></td><td>신뢰와 사회적 증거</td><td><span class="badge s-strong">강함</span></td><td>부정 리뷰에 답글이 없음</td></tr><tr data-strength="강함"><td><a href="#p8">권위</a></td><td>신뢰와 사회적 증거</td><td><span class="badge s-strong">강함</span></td><td>소개글에 자격·인증·수치 같은 구체적 근거가 없음</td></tr><tr data-strength="강함"><td><a href="#p9">손실 회피와 프레이밍</a></td><td>가격 인식</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p10">정액제 편향과 헬스장의 역설</a></td><td>가격 인식</td><td><span class="badge s-strong">강함</span></td><td>소개글·가격표에 일시정지·환불 안내가 없음</td></tr><tr data-strength="중간"><td><a href="#p11">가격-품질 추론</a></td><td>가격 인식</td><td><span class="badge s-mid">중간</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p12">끝자리 가격 효과</a></td><td>가격 인식</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p13">피크엔드 법칙</a></td><td>경험과 기억</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p14">기대 불일치</a></td><td>경험과 기억</td><td><span class="badge s-strong">강함</span></td><td>소개글이 강조하는 요소(예: 청결)와 관련 선택 키워드 비율의 불일치</td></tr><tr data-strength="강함"><td><a href="#p15">첫인상과 처리 유창성</a></td><td>경험과 기억</td><td><span class="badge s-strong">강함</span></td><td>소개글 앞부분이 인사말·일반론으로 채워져 있음</td></tr><tr data-strength="강함"><td><a href="#p16">단순 노출 효과</a></td><td>경험과 기억</td><td><span class="badge s-strong">강함</span></td><td>소식 발행이 오래 멈춰 있음</td></tr><tr data-strength="강함"><td><a href="#p17">목표 가속·부여된 진행</a></td><td>행동 유지와 재방문</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p18">새 출발 효과</a></td><td>행동 유지와 재방문</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p19">상호성</a></td><td>행동 유지와 재방문</td><td><span class="badge s-strong">강함</span></td><td><span class=dim>—</span></td></tr><tr data-strength="강함"><td><a href="#p20">심리적 반발</a></td><td>반발과 압박</td><td><span class="badge s-strong">강함</span></td><td>경쟁군 대비 ‘과도한 권유가 없어요’ 비율이 낮음</td></tr><tr data-strength="중간"><td><a href="#p21">희소성과 긴급성</a></td><td>반발과 압박</td><td><span class="badge s-mid">중간</span></td><td><span class=dim>—</span></td></tr></tbody>
+  </table></div>
+  <p class="legend">근거 강함: 여러 연구에서 반복 확인 · 중간: 근거는 있으나 조건·출처가 제한적 · 혼재: 유명하지만 재현 결과가 엇갈림 (발견 카드에서 단정 금지)</p>
+</section>
+
+<section class="cat" id="선택과 결정"><div class="cat-head"><h2>선택과 결정</h2><p>여러 선택지 앞에서 고객이 어떻게 고르는가</p></div><article class="card" id="p0" data-strength="혼재">
+  <header><h3>선택 과부하</h3><span class="en">Choice Overload</span><span class="badge s-mixed">근거 혼재</span></header>
+  <dl><dt>원리와 근거</dt><dd>선택지가 너무 많으면 고르기를 포기하거나 고른 뒤 만족도가 떨어진다는 원리. 잼 실험(Iyengar &amp; Lepper, 2000)에서 24종보다 6종 진열 시 구매율이 훨씬 높았다. 그러나 메타분석(Scheibehenne 외, 2010)에서 평균 효과는 거의 0이었고, 후속 메타분석(Chernev 외, 2015)은 선택지가 복잡하거나 선호가 불확실하거나 빨리 결정해야 할 때에만 효과가 나타난다고 정리했다.</dd><dt>플레이스 적용</dt><dd>스터디카페의 시간권·기간권·정액권·좌석 종류, 헬스장의 기간권과 PT 횟수 조합이 한꺼번에 나열되면 첫 방문 고객이 비교를 포기하기 쉽다.</dd><dt>진단 신호</dt><dd>가격·메뉴 항목 수가 많은데 ‘요금제가 잘 되어있어요’ 선택 비율이 낮음</dd><dt>주의</dt><dd>‘메뉴가 많으면 무조건 나쁘다’가 아니라 ‘비교가 어려운 선택지가 많을 때 문제’로 설명할 것</dd></dl>
+</article><article class="card" id="p1" data-strength="강함">
+  <header><h3>타협 효과·미끼 효과</h3><span class="en">Compromise / Decoy Effect</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>세 개의 선택지가 있으면 극단을 피해 가운데를 고르는 경향이 있고(Simonson, 1989), 명백히 불리한 선택지 하나가 옆의 선택지를 더 매력적으로 보이게 만든다(Huber, Payne &amp; Puto, 1982).</dd><dt>플레이스 적용</dt><dd>팔고 싶은 이용권을 가운데 두는 3단 구성, 또는 6개월권 옆에 가격 차이가 크지 않은 3개월권을 두어 6개월권을 돋보이게 하는 구성.</dd><dt>진단 신호</dt><dd>가격표가 단일 상품이거나 선택지가 두 개뿐임</dd></dl>
+</article><article class="card" id="p2" data-strength="강함">
+  <header><h3>기본값 효과</h3><span class="en">Default Effect</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람은 미리 정해진 선택지를 그대로 따르는 경향이 강하다. 장기기증 동의를 기본값으로 둔 국가와 아닌 국가의 동의율 차이가 대표 사례(Johnson &amp; Goldstein, 2003).</dd><dt>플레이스 적용</dt><dd>‘처음이라면 이 이용권’ 같은 추천 표시, 첫 방문자용 기본 코스 안내.</dd></dl>
+</article><article class="card" id="p3" data-strength="강함">
+  <header><h3>앵커링</h3><span class="en">Anchoring</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>처음 본 숫자가 이후 판단의 기준점이 된다(Tversky &amp; Kahneman, 1974).</dd><dt>플레이스 적용</dt><dd>가격표를 비싼 상품부터 보여주면 이후 상품이 상대적으로 저렴하게 느껴진다. 헬스장 PT 가격을 총액으로만 적으면 그 부담이 앵커가 되기도 한다.</dd></dl>
+</article></section><section class="cat" id="신뢰와 사회적 증거"><div class="cat-head"><h2>신뢰와 사회적 증거</h2><p>처음 보는 가게를 무엇을 근거로 믿는가</p></div><article class="card" id="p4" data-strength="강함">
+  <header><h3>사회적 증거</h3><span class="en">Social Proof</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>확신이 없을 때 사람은 다른 사람들의 선택을 따라간다(Cialdini). 처음 가보는 가게를 고를 때 리뷰 수와 별점이 판단을 대신한다.</dd><dt>플레이스 적용</dt><dd>리뷰 수, ‘○○명이 선택한 키워드’, 저장 수 같은 숫자 자체가 설득 도구다.</dd><dt>진단 신호</dt><dd>같은 상권 경쟁 매장 대비 방문자 리뷰 수가 크게 적음</dd></dl>
+</article><article class="card" id="p5" data-strength="강함">
+  <header><h3>리뷰 수 휴리스틱</h3><span class="en">Review Count Heuristic</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람은 별점보다 리뷰 수를 더 신뢰하는 경향이 있어, 통계적으로 더 나쁜 선택이어도 리뷰가 많은 쪽을 고르는 경우가 많다(Powell 외, 2017, Psychological Science).</dd><dt>플레이스 적용</dt><dd>별점이 비슷하면 리뷰 수 격차가 선택을 좌우한다. 수집한 헬스장 3곳처럼 별점이 모두 4.9대라면 사실상 리뷰 수와 키워드가 경쟁 축이다.</dd><dt>진단 신호</dt><dd>경쟁군과 별점 차이는 작고 리뷰 수 차이는 큼</dd></dl>
+</article><article class="card" id="p6" data-strength="중간">
+  <header><h3>너무 완벽한 별점의 역효과</h3><span class="en">Too-Good-To-Be-True Ratings</span><span class="badge s-mid">근거 중간</span></header>
+  <dl><dt>원리와 근거</dt><dd>만점에 가까운 별점은 오히려 의심을 산다. Spiegel Research Center(2017)는 구매 가능성이 별점 4.0~4.7 구간에서 가장 높고 5점에 가까워질수록 다시 떨어진다고 보고했다. 부정 리뷰가 조금 섞여 있어야 긍정 리뷰도 믿는다.</dd><dt>플레이스 적용</dt><dd>예일 스터디카페처럼 리뷰 37개에 별점 5.0이라면 별점을 더 올리기보다 리뷰 수를 늘려 신뢰의 근거를 쌓는 것이 우선이다.</dd><dt>진단 신호</dt><dd>별점 4.9 이상 + 리뷰 수 적음</dd></dl>
+</article><article class="card" id="p7" data-strength="강함">
+  <header><h3>부정성 편향</h3><span class="en">Negativity Bias</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>나쁜 정보는 같은 크기의 좋은 정보보다 훨씬 강하게 작용한다(Baumeister 외, 2001, ‘Bad is stronger than good’). 부정 리뷰 하나가 긍정 리뷰 여러 개의 효과를 상쇄할 수 있다.</dd><dt>플레이스 적용</dt><dd>부정 리뷰를 무시하기보다 답글로 대응해야 하는 이유. 신규 고객은 리뷰 자체보다 사장님의 대응 방식을 보고 판단하기도 한다.</dd><dt>진단 신호</dt><dd>부정 리뷰에 답글이 없음</dd></dl>
+</article><article class="card" id="p8" data-strength="강함">
+  <header><h3>권위</h3><span class="en">Authority</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>전문성의 신호가 있으면 사람들은 판단을 위임한다(Cialdini).</dd><dt>플레이스 적용</dt><dd>헬스장의 트레이너 자격·전공, 장비 공식 센터 인증, 스터디카페의 공기질 관리 수치 같은 구체적 근거. 파이어짐 소개글의 ‘체육 전공 8명’이 이런 사례다.</dd><dt>진단 신호</dt><dd>소개글에 자격·인증·수치 같은 구체적 근거가 없음</dd></dl>
+</article></section><section class="cat" id="가격 인식"><div class="cat-head"><h2>가격 인식</h2><p>같은 가격이 어떻게 다르게 느껴지는가</p></div><article class="card" id="p9" data-strength="강함">
+  <header><h3>손실 회피와 프레이밍</h3><span class="en">Loss Aversion / Framing</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람은 같은 크기의 이익보다 손실을 약 두 배 크게 느끼고, 같은 내용도 표현 방식에 따라 반응이 달라진다(Kahneman &amp; Tversky, 1979).</dd><dt>플레이스 적용</dt><dd>‘3개월권 10% 할인’보다 ‘1개월권으로 세 번 끊으면 ○○원 더 내요’가 더 강하게 작용할 수 있다.</dd><dt>주의</dt><dd>과하면 압박으로 느껴져 심리적 반발을 일으킨다</dd></dl>
+</article><article class="card" id="p10" data-strength="강함">
+  <header><h3>정액제 편향과 헬스장의 역설</h3><span class="en">Flat-rate Bias</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람들은 실제 이용량보다 많이 쓸 거라 예상하고 정액제를 고른다. 미국 헬스장 연구에서 월회원권 이용자는 실제 방문 횟수로 따지면 회당 결제보다 훨씬 비싸게 내고 있었다(DellaVigna &amp; Malmendier, 2006, ‘Paying not to go to the gym’).</dd><dt>플레이스 적용</dt><dd>장기권이 매출의 핵심인 이유이자, ‘안 가게 되면 아깝다’는 불안이 가입을 망설이게 하는 이유. 일시정지 제도나 환불 규정을 명시하면 불안이 줄어든다.</dd><dt>진단 신호</dt><dd>소개글·가격표에 일시정지·환불 안내가 없음</dd></dl>
+</article><article class="card" id="p11" data-strength="중간">
+  <header><h3>가격-품질 추론</h3><span class="en">Price-Quality Inference</span><span class="badge s-mid">근거 중간</span></header>
+  <dl><dt>원리와 근거</dt><dd>정보가 부족하면 사람은 가격으로 품질을 추정한다. 너무 싸면 오히려 의심받을 수 있다.</dd><dt>플레이스 적용</dt><dd>저가 전략이라면 ‘왜 싼지’를 설명해야 한다. 카공족처럼 ‘24시간 5,900원’과 ‘고급 커피 무제한’을 함께 적으면 저가의 의심을 품질 근거로 상쇄한다. 실제로 카공족은 ‘가성비가 좋아요’ 선택 비율이 매우 높았다.</dd></dl>
+</article><article class="card" id="p12" data-strength="강함">
+  <header><h3>끝자리 가격 효과</h3><span class="en">Left-digit Effect</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람은 가격의 왼쪽 자리를 중심으로 인식해서 60,000원보다 59,000원을 훨씬 싸게 느낀다(Thomas &amp; Morwitz, 2005).</dd><dt>플레이스 적용</dt><dd>이용권 가격 설정 시 왼쪽 자리가 바뀌는 경계 바로 아래로 책정.</dd></dl>
+</article></section><section class="cat" id="경험과 기억"><div class="cat-head"><h2>경험과 기억</h2><p>방문 경험이 어떻게 기억되고 리뷰가 되는가</p></div><article class="card" id="p13" data-strength="강함">
+  <header><h3>피크엔드 법칙</h3><span class="en">Peak-End Rule</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람은 경험 전체의 평균이 아니라 가장 강렬했던 순간과 마지막 순간으로 경험을 기억한다(Kahneman 외, 1993).</dd><dt>플레이스 적용</dt><dd>리뷰는 이 기억을 바탕으로 쓰인다. 헬스장의 첫 상담·첫 PT, 스터디카페의 퇴실 순간(인사, 정리 상태)이 리뷰 내용을 좌우한다.</dd></dl>
+</article><article class="card" id="p14" data-strength="강함">
+  <header><h3>기대 불일치</h3><span class="en">Expectation-Disconfirmation</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>만족은 경험의 절대 수준이 아니라 기대와의 차이로 결정된다(Oliver, 1980).</dd><dt>플레이스 적용</dt><dd>사진과 소개글이 실제보다 과하면 오히려 불만 리뷰가 는다. 불만의 원인이 ‘기대를 너무 높인 홍보’라면 마케팅 문제, ‘실제 서비스 부족’이라면 비마케팅 문제로 분류한다.</dd><dt>진단 신호</dt><dd>소개글이 강조하는 요소(예: 청결)와 관련 선택 키워드 비율의 불일치</dd></dl>
+</article><article class="card" id="p15" data-strength="강함">
+  <header><h3>첫인상과 처리 유창성</h3><span class="en">Processing Fluency</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람은 쉽게 이해되고 보기 좋은 정보를 더 신뢰하고 선호한다. 웹 페이지 인상은 아주 짧은 순간에 형성된다는 연구도 있다(Lindgaard 외, 2006).</dd><dt>플레이스 적용</dt><dd>대표 사진 첫 장과 소개글 첫 두 줄이 사실상 전부다. ‘펼쳐보기’ 앞부분에서 핵심을 말하는지가 진단 포인트.</dd><dt>진단 신호</dt><dd>소개글 앞부분이 인사말·일반론으로 채워져 있음</dd></dl>
+</article><article class="card" id="p16" data-strength="강함">
+  <header><h3>단순 노출 효과</h3><span class="en">Mere Exposure</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>자주 본 대상일수록 호감이 생긴다(Zajonc, 1968).</dd><dt>플레이스 적용</dt><dd>소식 탭의 꾸준한 발행, 동네 오프라인 노출.</dd><dt>진단 신호</dt><dd>소식 발행이 오래 멈춰 있음</dd></dl>
+</article></section><section class="cat" id="행동 유지와 재방문"><div class="cat-head"><h2>행동 유지와 재방문</h2><p>등록한 고객이 계속 오게 만드는 힘</p></div><article class="card" id="p17" data-strength="강함">
+  <header><h3>목표 가속·부여된 진행</h3><span class="en">Goal Gradient / Endowed Progress</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>목표에 가까워질수록 노력이 빨라지고(Kivetz 외, 2006), 이미 진행된 것처럼 느끼게 하면 완주율이 올라간다. 세차장 스탬프 연구에서 10칸 카드보다 ‘12칸 중 2칸을 미리 찍어준 카드’의 완주율이 훨씬 높았다(Nunes &amp; Drèze, 2006).</dd><dt>플레이스 적용</dt><dd>스터디카페 정액권의 누적 사용 시간 표시, 헬스장 출석 스탬프, 첫 방문 시 1회 적립으로 시작하기.</dd></dl>
+</article><article class="card" id="p18" data-strength="강함">
+  <header><h3>새 출발 효과</h3><span class="en">Fresh Start Effect</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>사람들은 새해, 새 달, 월요일, 생일 같은 시점에 목표를 시작하려는 경향이 있고, 실제로 이런 시점에 헬스장 방문이 는다(Dai, Milkman &amp; Riis, 2014).</dd><dt>플레이스 적용</dt><dd>헬스장은 1월·월초, 스터디카페는 개강·시험 기간 시작 전에 맞춘 소식 발행과 프로모션.</dd></dl>
+</article><article class="card" id="p19" data-strength="강함">
+  <header><h3>상호성</h3><span class="en">Reciprocity</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>먼저 받으면 돌려주고 싶어진다(Cialdini).</dd><dt>플레이스 적용</dt><dd>무료 체험, 무료 음료. 리뷰 요청도 좋은 경험을 준 직후에 할 때 응답률이 높다.</dd><dt>주의</dt><dd>‘감사 표시’와 ‘리뷰 대가’를 구분할 것. 대가성 리뷰는 가드레일 위반</dd></dl>
+</article></section><section class="cat" id="반발과 압박"><div class="cat-head"><h2>반발과 압박</h2><p>설득이 역효과로 바뀌는 지점</p></div><article class="card" id="p20" data-strength="강함">
+  <header><h3>심리적 반발</h3><span class="en">Reactance</span><span class="badge s-strong">근거 강함</span></header>
+  <dl><dt>원리와 근거</dt><dd>선택의 자유를 침해받는다고 느끼면 사람은 오히려 반대로 행동한다(Brehm, 1966).</dd><dt>플레이스 적용</dt><dd>헬스장의 과한 PT 권유가 대표 사례. 수집 데이터에서 ‘과도한 권유가 없어요’ 선택 비율이 파이어짐 11%, 워라밸 5%, 에이블짐 1%로 차이가 났다. 고객이 굳이 이 키워드를 고른다는 건 업계 전반에 권유 부담이 있다는 신호이며, 그래서 차별점이 될 수 있다.</dd><dt>진단 신호</dt><dd>경쟁군 대비 ‘과도한 권유가 없어요’ 비율이 낮음</dd></dl>
+</article><article class="card" id="p21" data-strength="중간">
+  <header><h3>희소성과 긴급성</h3><span class="en">Scarcity / Urgency</span><span class="badge s-mid">근거 중간</span></header>
+  <dl><dt>원리와 근거</dt><dd>귀하거나 곧 사라진다고 느끼면 가치를 더 높게 평가한다(Worchel 외, 1975).</dd><dt>플레이스 적용</dt><dd>실제 한정(선착순 좌석, 실제 마감일)일 때만 사용.</dd><dt>주의</dt><dd>반복되거나 가짜로 느껴지면 신뢰를 잃고 반발을 부른다</dd></dl>
+</article></section>
+
+<section class="block" style="margin-top:56px">
+  <h2>지식 조각 템플릿</h2>
+  <p>원리마다 같은 틀로 한 조각씩 만들면, 스코어링 엔진이 찾은 문제 유형으로 관련 원리를 바로 불러올 수 있습니다.</p>
+  <div class="template">
+    <ol>
+      <li>원리 이름과 분류</li>
+      <li>원리와 근거 (연구 출처, 근거 강도)</li>
+      <li>플레이스 적용 예 (업종별)</li>
+      <li>진단 신호 (수집 데이터로 판단 가능한 조건)</li>
+      <li>권장 행동</li>
+      <li>주의점과 가드레일</li>
+    </ol>
+    <div class="example"><b>연결 예시</b> — 엔진이 “별점 5.0, 리뷰 37개”를 발견 → ‘사회적 증거’와 ‘너무 완벽한 별점의 역효과’ 조각을 불러옴 → LLM이 “지금은 별점보다 리뷰 수를 늘리는 게 신뢰에 더 도움이 돼요”라고 설명</div>
+  </div>
+</section>
+
+<section class="guard">
+  <h2>가드레일: 추천하지 않을 것</h2>
+  <p style="margin:6px 0 0">이 원리들은 조작에도 쓰일 수 있어서, 아래 항목은 지식베이스에 “금지”로 명시해 LLM이 제안하지 않게 합니다.</p>
+  <ul>
+    <li>가짜 희소성과 긴급성 (“오늘만”을 무한 반복하는 식)</li>
+    <li>대가를 주고 받은 리뷰의 미표시 (공정위 추천·보증 심사지침의 경제적 이해관계 표시 의무)</li>
+    <li>리뷰 조작, 저장 수·트래픽 조작 대행</li>
+    <li>해지나 환불을 어렵게 만드는 설계</li>
+  </ul>
+</section>
+
+<footer>BA AI 경영 시뮬레이션 · RAG 지식베이스 초안 · 연구 출처는 지식베이스 반영 전 원문 확인 필요</footer>
+</main>
+<script>
+const btns=document.querySelectorAll('.filters button');
+btns.forEach(b=>b.addEventListener('click',()=>{
+  const f=b.dataset.f;
+  btns.forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));
+  document.querySelectorAll('[data-strength]').forEach(el=>{
+    if(f==='all'||el.dataset.strength===f) el.removeAttribute('data-hidden'); else el.setAttribute('data-hidden','');
+  });
+}));
+</script>
+</body>
+</html>

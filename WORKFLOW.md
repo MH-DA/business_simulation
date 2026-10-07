@@ -10,8 +10,9 @@ BA AI 경영 시뮬레이션 팀 프로젝트
 챗봇 상담으로 지금 필요한 마케팅 실행 방법을 함께 찾아주는 웹 서비스.
 
 **핵심 원칙**
-- 판단은 규칙 기반 진단 엔진이 한다. LLM은 판단 결과를 설명하고 문구로 만드는 역할만 한다.
-- 숫자는 엔진이 계산한 것만 화면에 쓴다.
+- 점수화하지 않는다. 종합 점수·가중치·순위 없이 사실(수치)만 보여준다.
+- 숫자는 지표 계산 모듈이 계산한 것만 화면에 쓴다. LLM은 지식베이스를 근거로 설명하고 문구로 만드는 역할만 한다.
+- 무엇을 먼저 할지는 서비스가 정하지 않고, 근거를 보여준 뒤 사장님이 판단하도록 돕는다.
 - 데이터로 알 수 없는 것은 사장님께 되묻는다 (확인 필요 카드).
 - 처음부터 크롤러를 붙이지 않는다. Mock 데이터로 화면과 챗봇을 먼저 완성하고, 실제 수집기는 마지막에 연결한다.
 
@@ -49,9 +50,9 @@ BA AI 경영 시뮬레이션 팀 프로젝트
 |---|---|
 | 가게 카드 (이름, 업종, 주소, 별점) | 수집기 `store` |
 | 현재 확인된 키워드 칩 | 대표 키워드 (없으면 선택 키워드 상위) |
-| 자주 언급되는 강점 | 선택 키워드 비율 상위 + 진단 엔진 강점 |
-| 자주 언급되는 불편 사항 | 진단 엔진 약점 (리뷰 원문이 있으면 부정 표현 추출) |
-| 리뷰 분석 문단 | 엔진 결과를 LLM이 문장으로 정리 |
+| 자주 언급되는 강점 | 선택 키워드 비율이 높은 순 3개 |
+| 자주 언급되는 불편 사항 | 경쟁 매장 평균보다 비율이 낮은 키워드 + 리뷰 원문의 부정 표현 |
+| 리뷰 분석 문단 | 계산된 지표를 LLM이 문장으로 정리 |
 
 ### 03·04 챗봇 상담 ↔ 답변 방식
 
@@ -65,7 +66,7 @@ BA AI 경영 시뮬레이션 팀 프로젝트
 
 | 카드 | 내용 | 출처 | 스타일 |
 |---|---|---|---|
-| 발견 카드 | 우리 가게의 사실과 숫자 | 진단 엔진 | 차분한 회색·네이비, 버튼 없음 |
+| 발견 카드 | 우리 가게의 사실과 숫자 | 지표 계산 모듈 | 차분한 회색·네이비, 버튼 없음 |
 | 근거 카드 | 그 사실이 왜 중요한지 (마케팅 원리) | 지식베이스 (RAG) | 답변 옆 작은 카드, 근거 강도 배지 |
 | 확인 필요 카드 | 사장님께 묻는 질문 | 사장님 답변 저장 | 주황 계열, 선택 버튼 |
 
@@ -83,13 +84,13 @@ BA AI 경영 시뮬레이션 팀 프로젝트
    ▼
 [데이터 수집]    Provider 순서대로 시도 (시연 데이터 → 크롤러 → Mock), 스냅샷 저장
    ▼
-[진단 엔진]      키워드 비율, 경쟁 격차, 정보 완성도 → 강점/약점, 문제 유형
+[지표 계산]      키워드 비율, 경쟁 평균 대비 차이, 정보 누락 여부 → 사실과 신호 유형 (점수 없음)
    ▼
 [RAG + LLM]     문제 유형으로 지식 조각 검색 → 리뷰 분석 문단, 카드 문구 생성
    ▼
 [02 분석 결과]   가게 카드, 강점/불편 사항, 리뷰 분석
    ▼
-[03·04 챗봇]    질문 → 의도 분류 → 엔진 결과 + 지식 → 답변 + 근거 카드 + 확인 질문
+[03·04 챗봇]    질문 → 의도 분류 → 계산된 지표 + 지식 → 답변 + 근거 카드 + 확인 질문
                 사장님 답변 저장 → 다음 진단에 반영 (반복)
 ```
 
@@ -114,7 +115,7 @@ place-ai/
 │                                  # ConfirmCard, ChatPanel, FaqChips ...
 ├── lib/
 │   ├── providers/                 # MockProvider, CrawlerProvider (교체 가능한 데이터 공급자)
-│   ├── engine/                    # 진단 엔진
+│   ├── metrics/                   # 지표 계산 (점수화 없음)
 │   ├── knowledge/                 # 지식 조각 검색 (RAG)
 │   └── llm/                       # 프롬프트, LLM 호출
 ├── data/
@@ -139,22 +140,22 @@ type Store = {
 
 type KeywordStat = { keyword: string; count: number; ratio: number }; // ratio = count / visitorReviewCount
 
-type Finding = {
-  type: "강점" | "약점" | "정보"; keyword?: string;
+type Finding = { // 점수·가중치·우선순위 없음
+  id: string; type: "높음" | "낮음" | "정보"; keyword?: string;
   mine?: number; competitorAvg?: number; gapPp?: number;
-  category: "마케팅" | "비마케팅"; problemType: string; needsOwnerCheck: boolean;
+  category: "마케팅" | "비마케팅"; signalType: string; needsOwnerCheck: boolean;
 };
 
 type Card =
   | { kind: "발견"; text: string; findingId: string }
-  | { kind: "근거"; knowledgeId: string; title: string; strength: "강함" | "중간" | "혼재" }
+  | { kind: "근거"; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" }
   | { kind: "확인"; text: string; buttons: string[] };
 
 type KnowledgeChunk = {
   id: string; principle: string; category: string; strength: "강함" | "중간" | "혼재";
   core: string[]; apply: string[]; examples: Partial<Record<Store["industry"], string>>;
-  signals: string[]; caution?: string; source?: string; problemTypes: string[];
-};
+  signals: string[]; actions: string[]; caution?: string; source?: string; signalTypes: string[];
+}; // 전체 필드는 types/index.ts, 데이터는 data/knowledge/principles.json
 ```
 
 ---
@@ -192,25 +193,25 @@ data/places에 해당 매장 JSON이 있으면 바로 완료 처리하고, 없�
 ```
 완료 기준: URL 입력 → 분석 중 → 결과 화면까지 끊김 없이 이동
 
-### 4단계 · 진단 엔진
+### 4단계 · 지표 계산 모듈
 ```
-lib/engine에 진단 엔진을 만들어줘. 선택 키워드 인원을 방문자 리뷰 수로 나눈 비율,
-경쟁 매장 평균과의 차이(%p), 기준을 넘는 항목의 강점/약점 분류를 계산해.
-LLM은 쓰지 말고 규칙으로만 계산하고, 단위 테스트도 같이 만들어줘.
+lib/metrics에 지표 계산 모듈을 만들어줘. 선택 키워드 인원을 방문자 리뷰 수로 나눈 비율,
+경쟁 매장 평균과의 차이(%p), 정보 항목의 있음/없음을 계산하고 PROJECT.md 11장의 신호 유형을 붙여줘.
+점수·가중치·순위는 만들지 말고, LLM도 쓰지 말고, 단위 테스트도 같이 만들어줘.
 ```
 완료 기준: 수집 데이터 JSON을 넣으면 Finding 목록이 나오고 테스트 통과
-※ 가중치와 기준값은 팀의 판단 기준표를 그대로 넘긴다 (팀 핵심 산출물)
+※ 점수화하지 않는다. 사실(수치)과 신호 유형만 내보낸다
 
 ### 5단계 · 챗봇 (RAG + LLM)
 ```
 POST /api/chat: 사장님 질문을 진단 설명형/실행안 생성형/판단 보조형으로 분류하고,
-의도에 맞는 엔진 결과와 data/knowledge의 지식 조각을 골라 LLM에 넘겨줘.
+의도에 맞는 계산된 지표와 data/knowledge/principles.json의 지식 조각을 signalTypes로 골라 LLM에 넘겨줘.
 LLM은 답변과 함께 사용한 지식 ID를 내보내고, 서버는 그 ID가 실제 검색 결과에 있을 때만
 근거 카드로 표시해. 판단 보조형은 결론 대신 확인 필요 카드(버튼)로 끝내.
 답변은 스트리밍으로 보여주고, API 키는 서버 환경변수에만 둬.
 ```
 완료 기준: 자주 묻는 질문 4개를 눌렀을 때 답변 + 근거 카드 + (필요 시) 확인 버튼 표시
-※ 프롬프트 공통 규칙: 엔진 결과에 없는 숫자 금지 / 근거 '혼재' 원리 단정 금지 / 가드레일 위반 제안 금지
+※ 프롬프트 공통 규칙: 점수·순위 금지 / 계산된 지표에 없는 숫자 금지 / guardrails.json 항상 포함 / 근거 '혼재' 원리 단정 금지 / 가드레일 위반 제안 금지
 
 ### 6단계 · 실제 데이터 연결
 ```

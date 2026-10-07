@@ -45,35 +45,47 @@ export type CollectedPlace = {
   source: "crawler" | "octoparse" | "manual" | "mock" | "demo";
 };
 
+// 점수·가중치·우선순위 필드 없음. 사실과 신호 유형만 담는다. (PROJECT.md 10·11장)
 export type Finding = {
-  type: "강점" | "약점" | "정보";
+  id: string;
+  type: "높음" | "낮음" | "정보";
   keyword?: string;
   mine?: number;
   competitorAvg?: number;
   gapPp?: number;
   category: "마케팅" | "비마케팅";
-  problemType: string;
+  signalType: string; // PROJECT.md 11장 신호 유형 목록의 값
   needsOwnerCheck: boolean;
 };
 
 export type Card =
   | { kind: "발견"; text: string; findingId: string }
-  | { kind: "근거"; knowledgeId: string; title: string; strength: "강함" | "중간" | "혼재" }
+  | { kind: "근거"; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" }
   | { kind: "확인"; text: string; buttons: string[] };
 
+// data/knowledge/principles.json 의 한 항목 (원본: docs/knowledge/*.html)
 export type KnowledgeChunk = {
   id: string;
+  layer: "노출" | "선택";
   principle: string;
+  principleEn?: string;
   category: string;
   strength: "강함" | "중간" | "혼재";
   core: string[];
   apply: string[];
   examples: Partial<Record<Industry, string>>;
   signals: string[];
+  actions: string[];
+  description?: string;
+  placeApplication?: string;
   caution?: string;
   source?: string;
-  problemTypes: string[];
+  sourceFile?: string;
+  signalTypes: string[];
 };
+
+// data/knowledge/guardrails.json 의 한 항목. 모든 LLM 호출에 항상 포함
+export type Guardrail = { id: string; rule: string; detail: string };
 
 // 분석 작업(job) 상태. /api/analyze → /api/jobs/[jobId]
 export type JobStatus = "queued" | "collecting" | "diagnosing" | "done" | "failed";
