@@ -1,0 +1,26 @@
+{
+  "store": {
+    "placeId": "sample-gym-002",
+    "name": "샘플 경쟁 헬스장 (가짜 데이터)",
+    "category": "헬스장",
+    "address": "서울 도봉구 (가짜 주소)",
+    "rating": 4.8,
+    "visitorReviewCount": 400,
+    "blogReviewCount": 40,
+    "hasBookingTab": true,
+    "amenities": ["주차", "샤워시설", "PT"],
+    "intro": "1:1 PT와 그룹 수업이 강한 헬스장입니다.",
+    "representativeKeywords": ["노원헬스장", "PT"],
+    "industry": "헬스장"
+  },
+  "keywordStats": [
+    { "keyword": "시설이 깔끔해요", "count": 240, "ratio": 0.6 },
+    { "keyword": "운동기구가 다양해요", "count": 200, "ratio": 0.5 },
+    { "keyword": "사장님이 친절해요", "count": 160, "ratio": 0.4 },
+    { "keyword": "샤워실이 깨끗해요", "count": 100, "ratio": 0.25 },
+    { "keyword": "가격이 합리적이에요", "count": 100, "ratio": 0.25 },
+    { "keyword": "트레이너가 자세를 꼼꼼히 봐줘요", "count": 200, "ratio": 0.5 },
+    { "keyword": "주차하기 편해요", "count": 40, "ratio": 0.1 }
+  ],
+  "reviews": []
+}

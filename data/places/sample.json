@@ -1,0 +1,50 @@
+{
+  "store": {
+    "placeId": "sample-gym-001",
+    "name": "샘플 헬스장 (가짜 데이터)",
+    "category": "헬스장",
+    "address": "서울 노원구 (가짜 주소)",
+    "rating": 4.9,
+    "visitorReviewCount": 240,
+    "blogReviewCount": 18,
+    "hasBookingTab": true,
+    "amenities": ["주차", "샤워시설", "무선 인터넷", "포장"],
+    "intro": "넓고 깨끗한 동네 헬스장입니다. 자율 운동 위주로 운영합니다.",
+    "representativeKeywords": [],
+    "industry": "헬스장"
+  },
+  "keywordStats": [
+    { "keyword": "시설이 깔끔해요", "count": 168, "ratio": 0.7 },
+    { "keyword": "운동기구가 다양해요", "count": 132, "ratio": 0.55 },
+    { "keyword": "사장님이 친절해요", "count": 96, "ratio": 0.4 },
+    { "keyword": "샤워실이 깨끗해요", "count": 72, "ratio": 0.3 },
+    { "keyword": "가격이 합리적이에요", "count": 48, "ratio": 0.2 },
+    { "keyword": "트레이너가 자세를 꼼꼼히 봐줘요", "count": 36, "ratio": 0.15 },
+    { "keyword": "주차하기 편해요", "count": 24, "ratio": 0.1 }
+  ],
+  "reviews": [
+    {
+      "visitedDate": "2026-09-20",
+      "createdDate": "2026-09-21",
+      "visitCount": 3,
+      "authType": "영수증",
+      "votedKeywords": ["시설이 깔끔해요", "운동기구가 다양해요"],
+      "photoCount": 2,
+      "hasOwnerReply": true,
+      "ownerReply": "방문해 주셔서 감사합니다. 앞으로도 깨끗하게 관리하겠습니다.",
+      "body": "기구가 많고 청결해서 좋아요. 저녁에도 붐비지 않아요.",
+      "source": "mock"
+    },
+    {
+      "visitedDate": "2026-09-14",
+      "createdDate": "2026-09-14",
+      "visitCount": 1,
+      "authType": "영수증",
+      "votedKeywords": ["주차하기 편해요"],
+      "photoCount": 0,
+      "hasOwnerReply": false,
+      "body": "처음 가봤는데 주차가 편했어요. 자세 알려주는 분이 있으면 더 좋겠어요.",
+      "source": "mock"
+    }
+  ]
+}
