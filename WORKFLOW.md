@@ -25,7 +25,7 @@ BA AI 경영 시뮬레이션 팀 프로젝트
 | 스타일 | Tailwind CSS + shadcn/ui | Figma의 카드·칩·버튼 스타일을 옮기기 쉬움 |
 | LLM | Claude 또는 OpenAI API (서버에서만 호출) | 챗봇 답변, 리뷰 분석 문단 |
 | 수집기 | 기존 Python 수집기 → 이후 FastAPI로 감싸기 | 처음에는 수집 결과 JSON만 사용 |
-| 저장 | JSON 파일 → 이후 SQLite 또는 Supabase | 프로토타입은 파일로 충분 |
+| 저장 | Supabase | 프로토타입은 파일로 충분 |
 | 배포 | Vercel | Next.js 무료 배포 |
 | 협업 | GitHub 저장소 1개 | 폴더 기준으로 담당 영역 분리 |
 
