@@ -183,17 +183,16 @@ type CollectedPlace = {
 ### 지식 원본과 변환 파일
 | 파일 | 역할 |
 |---|---|
-| `docs/knowledge/marketing_psychology_knowledge_base.html` | 원본 (상세판: 원리와 근거, 플레이스 적용, 진단 신호, 주의) |
-| `docs/knowledge/marketing_psychology_keywords_all_industries.html` | 원본 (키워드판: 핵심 개념, 공통 적용, 업종별 예시, 진단 신호, 출처) |
-| `data/knowledge/principles.json` | RAG가 실제로 읽는 파일 — 두 HTML을 합쳐 변환한 지식 조각 22개 (`KnowledgeChunk[]`) |
-| `data/knowledge/guardrails.json` | 제안 금지 규칙 6개 — 모든 LLM 호출에 항상 포함 |
+| `data/knowledge/principles.json` | **원본.** RAG가 읽는 지식 조각 23개 (`KnowledgeChunk[]`) |
+| `data/knowledge/guardrails.json` | **원본.** 제안 금지 규칙 7개 — 모든 LLM 호출에 항상 포함 |
+| `docs/knowledge/principles.html` | 보기용. JSON에서 자동 생성 (`python3 scripts/build_knowledge_html.py`) |
 
-- HTML은 사람이 읽는 원본, JSON은 코드가 읽는 데이터. LLM에 HTML을 통째로 넣지 않는다.
-- 원본 HTML을 고치면 JSON도 함께 고친다 (필요 시 `scripts/html_to_knowledge.py`로 재변환).
+- 지식은 JSON만 고치고 HTML은 스크립트로 다시 만든다. LLM에는 HTML을 넣지 않고, 검색된 조각만 짧은 텍스트로 바꿔 넣는다.
+- 분류: 선택과 결정 4 · 신뢰와 사회적 증거 6 · 가격 인식 4 · 경험과 기억 4 · 행동 유지와 재방문 5 ("반발과 압박"은 삭제, 가짜 희소성은 가드레일로 유지)
 - 노출 지식(대표 키워드, 정보 완성도, 활성도) 조각은 같은 형식으로 `data/knowledge/exposure.json`에 추가 예정.
 
 ### 검색 방식
-1. 지표 계산 모듈이 내보낸 `Finding.signalType`, 또는 챗봇 질문 의도(신규 유입/재방문/강점 홍보/불편 개선)를 신호 유형으로 바꾼다.
+1. 챗봇 질문 의도(신규 유입/재방문/강점 홍보/불편 개선)와 경쟁사 비교 항목의 사실(예: 쿠폰 없음, 새소식 오래됨)을 신호 유형으로 바꾼다.
 2. `signalTypes`에 그 신호가 들어 있고, `examples`에 해당 업종 예시가 있는 조각을 우선으로 최대 3개 고른다.
 3. 고른 조각의 `description`, `core`, `apply`, `examples[업종]`, `caution`, `strength`만 LLM에 넘긴다 (토큰 절약).
 4. 태그 매칭으로 못 찾는 자유 질문이 많아지면 벡터 검색을 추가한다.
@@ -214,8 +213,10 @@ type CollectedPlace = {
 | `photo_weak` | 대표 사진 부족 |
 | `news_inactive` | 소식 발행 멈춤 |
 | `expectation_gap` | 소개글 강조점과 선택 키워드 비율이 어긋남 |
-| `pressure_keyword_low` | '과도한 권유 없음'류 키워드 비율 낮음 |
 | `refund_info_missing` | 일시정지·환불·유효기간 안내 없음 |
+| `coupon_missing` | 쿠폰·적립 정보 없음 (비교 항목 "쿠폰") |
+| `retention_low` | 재방문 리뷰 비율 낮음 (리뷰의 `visitCount ≥ 2` 비율, 리뷰가 적으면 보류) |
+| `coupon_exists_retention_low` | 쿠폰은 있는데 재방문 리뷰 비율 낮음 |
 | `new_customer` / `retention` / `strength_promotion` / `complaint_improve` | 챗봇 자주 묻는 질문 4개 |
 | `review_request` / `promotion_timing` | 리뷰 요청 문구, 프로모션 시점 관련 질문 |
 
