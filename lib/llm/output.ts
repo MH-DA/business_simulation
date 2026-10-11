@@ -1,25 +1,37 @@
 // LLM 출력의 표시 줄([[근거: ...]], [[확인: ...]])을 본문에서 떼어낸다.
 
-// 스트리밍 중에 "[" 로 시작하는 줄은 화면에 내보내지 않고 붙들어 둔다. 표시 줄이 사장님 화면에 새어 나가지 않게 한다.
+// 스트리밍 중에 "[[" 로 시작하는 줄은 화면에 내보내지 않는다. 표시 줄이 사장님 화면에 새어 나가지 않게 한다.
+// "[동네명] ..." 처럼 "[" 하나로 시작하는 본문 줄은 그대로 보여준다.
 export class MarkerFilter {
   private atLineStart = true;
-  private holding = false;
+  private pending = ""; // 줄 맨 앞의 "[" 를 다음 글자를 볼 때까지 잠깐 붙들어 둔다
+  private holding = false; // "[[" 로 시작한 표시 줄을 버리는 중
 
   push(chunk: string): string {
     let out = "";
     for (const ch of chunk) {
-      if (this.atLineStart) {
-        this.holding = ch === "[";
-        this.atLineStart = false;
-      }
-      if (ch === "\n") {
-        this.atLineStart = true;
-        if (this.holding) {
-          this.holding = false;
-          continue; // 표시 줄의 줄바꿈도 함께 버린다
+      if (this.holding) {
+        if (ch === "\n") {
+          this.holding = false; // 표시 줄의 줄바꿈도 함께 버린다
+          this.atLineStart = true;
         }
+        continue;
       }
-      if (!this.holding) out += ch;
+      if (this.pending) {
+        this.pending = "";
+        if (ch === "[") {
+          this.holding = true;
+          continue;
+        }
+        out += "[";
+      }
+      if (this.atLineStart && ch === "[") {
+        this.pending = "[";
+        this.atLineStart = false;
+        continue;
+      }
+      this.atLineStart = ch === "\n";
+      out += ch;
     }
     return out;
   }

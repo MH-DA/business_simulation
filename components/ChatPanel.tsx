@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { FAQ } from "@/lib/sample-chat";
 import { AnswerCard, ConfirmCard, EvidenceCard } from "./AnswerCard";
+import { MarkdownAnswer } from "./MarkdownAnswer";
 
 type Evidence = { id: string; knowledgeId: string; title: string; summary: string; strength: "강함" | "중간" | "혼재" };
 type Confirm = { question: string; buttons: string[] };
@@ -117,7 +118,10 @@ export function ChatPanel({ placeId }: { placeId: string }) {
               {t.status === "error" && !t.answer && <AnswerCard>{FAILED}</AnswerCard>}
               {t.answer && (
                 <AnswerCard>
-                  {t.answer}
+                  <MarkdownAnswer text={t.answer} />
+                  {t.status === "streaming" && (
+                    <span className="mt-3 block text-sm text-muted-foreground">답변을 이어서 쓰고 있어요…</span>
+                  )}
                   {t.status === "error" && <span className="mt-2 block text-sm text-muted-foreground">{FAILED}</span>}
                 </AnswerCard>
               )}

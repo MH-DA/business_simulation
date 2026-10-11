@@ -7,7 +7,7 @@ import { buildComparison, daysSince } from "../metrics/comparison.ts";
 import { runChat, type ChatEvent, type Generate } from "./chat.ts";
 import { classifyQuestion, topicSignals } from "./intent.ts";
 import { MarkerFilter, parseOutput } from "./output.ts";
-import { buildPrompt } from "./prompt.ts";
+import { buildPrompt, buildSystemPrompt } from "./prompt.ts";
 import { FAQ } from "../sample-chat.ts";
 
 const chunks = JSON.parse(readFileSync("data/knowledge/principles.json", "utf-8")) as KnowledgeChunk[];
@@ -126,6 +126,22 @@ test("스트리밍 필터: 표시 줄은 조각이 어떻게 쪼개져도 화면
     for (let i = 0; i < text.length; i += size) shown += f.push(text.slice(i, i + size));
     assert.equal(shown.trim(), "첫 문장이에요. 둘째 문장이에요.", `조각 크기 ${size}`);
   }
+});
+
+test("스트리밍 필터: '[동네명]'처럼 대괄호 하나로 시작하는 본문 줄은 지우지 않는다", () => {
+  const text = "예시 문구예요.\n[동네명] 헬스장, 처음이어도 괜찮아요.\n- 목록\n[[근거: K-trust-01]]";
+  for (const size of [1, 2, 5, text.length]) {
+    const f = new MarkerFilter();
+    let shown = "";
+    for (let i = 0; i < text.length; i += size) shown += f.push(text.slice(i, i + size));
+    assert.equal(shown.trim(), "예시 문구예요.\n[동네명] 헬스장, 처음이어도 괜찮아요.\n- 목록", `조각 크기 ${size}`);
+  }
+});
+
+test("프롬프트: 답변 길이와 마크다운 범위를 정해 준다", () => {
+  const system = buildSystemPrompt("실행안 생성", []);
+  assert.match(system, /700자/);
+  assert.match(system, /제목\(#\)과 표는 쓰지 않는다/);
 });
 
 test("챗봇: 검색 결과에 없는 지식 ID는 근거 카드에서 걸러진다", async () => {

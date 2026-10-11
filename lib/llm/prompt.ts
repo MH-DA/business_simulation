@@ -43,6 +43,9 @@ export function buildSystemPrompt(type: QuestionType, guardrails: Guardrail[]): 
     TYPE_GUIDE[type],
     "",
     "[출력 형식]",
+    "- 본문은 700자 안쪽으로 쓴다. 더 필요하면 사장님이 이어서 물어보게 한다.",
+    "- 마크다운은 굵게(**), 목록(- 또는 1.)만 쓴다. 제목(#)과 표는 쓰지 않는다.",
+    "- 줄 맨 앞을 '['로 시작하지 않는다. '[동네명]' 같은 빈칸은 줄 중간에만 쓴다.",
     MARKER_RULES,
   ].join("\n");
 }

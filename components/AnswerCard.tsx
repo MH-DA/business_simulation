@@ -1,5 +1,5 @@
 export function AnswerCard({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-card border bg-card p-6 leading-relaxed whitespace-pre-wrap">{children}</div>;
+  return <div className="rounded-card border bg-card p-6 leading-relaxed">{children}</div>;
 }
 
 // 답변이 쓴 지식 조각. 서버가 실제 검색 결과에 있는 지식 ID만 내려준다.
