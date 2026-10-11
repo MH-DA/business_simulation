@@ -56,8 +56,8 @@ components/   StoreCard, KeywordChip, InsightCard, EvidenceCard, ConfirmCard, Ch
 lib/
   providers/  데이터 공급자 (PlaceDataProvider 인터페이스, MockProvider)
   metrics/    경쟁사 비교 (점수화 없음, 4단계)
-  knowledge/  지식 조각 검색 (5단계)
-  llm/        프롬프트, LLM 호출 (5단계)
+  knowledge/  지식 조각 검색 (신호 묶음 가중치, 5단계)
+  llm/        질문 분류, 프롬프트, Claude 호출, 근거 검증 (5단계)
 data/
   places/     매장별 수집 결과 JSON (현재는 가짜 샘플)
   knowledge/  RAG가 읽는 지식 조각 (principles.json, guardrails.json)
@@ -75,7 +75,7 @@ cp .env.example .env.local   # 필요한 키만 채운다 (Mock 개발은 비워
 npm run dev                  # http://localhost:3000
 npm run typecheck            # 타입 검사 (라우트 타입을 먼저 생성한다)
 npm run lint
-node --test lib/place-url.test.ts lib/metrics/metrics.test.ts   # 단위 테스트
+node --test lib/place-url.test.ts lib/metrics/metrics.test.ts lib/llm/llm.test.ts   # 단위 테스트
 npm run build
 ```
 
@@ -88,8 +88,18 @@ shadcn/ui 컴포넌트는 `components.json` 설정이 되어 있어서 필요할
 - [x] 2단계 정적 화면 (시작·링크 안내·분석 결과·상담, 샘플 데이터)
 - [x] 3단계 API와 화면 흐름 (링크 검사 → 분석 중 → 결과, 수집 필요 상태)
 - [ ] 4단계 경쟁사 비교 모듈 (`lib/metrics`, 점수화 없음). 기존 지표 계산 코드(키워드 비율, `Finding`)는 "경쟁사 분석 흐름" 기준으로 개편 예정
-- [ ] 5단계 챗봇 (RAG + LLM)
+- [x] 5단계 챗봇 (RAG + LLM): `POST /api/chat`(스트리밍), 질문 분류, 지식 검색, 근거 카드 검증, 확인 카드. LLM 키는 `.env.local`의 `ANTHROPIC_API_KEY`, 키 없이 화면만 볼 때는 `LLM_PROVIDER=stub`(가짜 답변)
 - [ ] 6단계 실제 데이터 연결 (추적 키워드 순위와 1위 가게 비교 항목 수집 포함, 위 "경쟁사 분석 흐름" 참고)
+
+## 챗봇 동작 (5단계)
+
+1. 질문을 규칙(키워드)으로 분류한다: 의도(신규 유입 / 재방문 / 강점 홍보 / 불편 개선)와 유형(진단 설명 / 실행안 생성 / 판단 보조). 빗나가는 자유 질문이 많아지면 LLM 분류로 바꾼다.
+2. 우리 가게와 1위 가게의 비교 사실 9개를 표로 만든다. 수집 전인 값(네이버페이, 새소식 날짜 등)은 "수집 전"으로 표시하고 LLM에게도 모른다고 알린다.
+3. 지식 조각을 고른다. `signalTypes`에 걸리는 신호를 묶음별 가중치(질문 의도 3 > 질문 속 주제어 2 > 비교 사실 1)로 세어 최대 3개를 뽑는다. 노출 지식(`exposure.json`)은 쓰지 않는다.
+4. 지식 조각, 비교 사실, 가드레일 전부, 공통 규칙(점수·순위 금지, 없는 숫자 금지, 혼재 단정 금지)을 묶어 Claude에 보낸다.
+5. LLM은 답변과 함께 쓴 지식 ID를 `[[근거: ...]]`로 내보내고, 서버는 검색 결과에 있는 ID만 근거 카드로 보여준다. 판단 보조형은 `[[확인: ...]]` 확인 카드로 끝난다. 표시 줄은 화면에 노출되지 않게 걸러낸다.
+
+모델은 `LLM_MODEL`(기본 `claude-sonnet-5-5`)로 바꾸고, 호출은 `lib/llm/anthropic.ts` 한 곳에서만 한다. 확인 카드의 버튼 선택은 아직 저장하지 않는다(`/api/answers`는 이후 단계).
 
 ## 참고
 

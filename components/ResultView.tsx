@@ -80,7 +80,7 @@ export function ResultView({ view }: { view: ResultViewModel }) {
         </div>
 
         <div className="mx-auto mt-24 max-w-[960px]">
-          <ChatPanel />
+          <ChatPanel placeId={view.store.placeId} />
         </div>
       </main>
     </>

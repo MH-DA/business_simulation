@@ -19,6 +19,8 @@ export type Store = {
   intro?: string;
   representativeKeywords: string[];
   coupons: string[];
+  hasNaverPay?: boolean; // 네이버페이 사용 여부 (수집 전이면 비어 있음)
+  lastNewsDate?: string; // 가장 최근 새소식 날짜, ISO 8601 (수집 전이면 비어 있음)
   industry: Industry;
 };
 
