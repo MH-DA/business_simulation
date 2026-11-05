@@ -3,13 +3,14 @@ import { loadKnowledge } from "@/lib/knowledge";
 import { runChat, selectGenerate } from "@/lib/llm";
 import { resolvePlace } from "@/lib/places";
 import { getProvider } from "@/lib/providers";
+import { profileLines } from "@/lib/profile";
 
 const MAX_QUESTION = 500;
 
-// POST /api/chat  { placeId, question }
+// POST /api/chat  { placeId, question, profile? }  profile = 성향 파악 답 번호 5개 (lib/profile.ts)
 // 응답: text/event-stream. 한 줄이 "data: {ChatEvent JSON}" 이고, 마지막은 type "done" (근거 카드, 확인 카드).
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => null)) as { placeId?: unknown; question?: unknown } | null;
+  const body = (await req.json().catch(() => null)) as { placeId?: unknown; question?: unknown; profile?: unknown } | null;
   const placeId = typeof body?.placeId === "string" ? body.placeId : "";
   const question = typeof body?.question === "string" ? body.question.trim() : "";
   if (!placeId || !question) {
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
     async start(controller) {
       const send = (event: unknown) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       try {
-        for await (const event of runChat({ question, place: resolved.data, competitors, knowledge, generate })) {
+        for await (const event of runChat({ question, place: resolved.data, competitors, knowledge, generate, profile: profileLines(body?.profile) })) {
           send(event);
         }
       } catch (err) {

@@ -1,38 +1,54 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/noto-sans-kr";
+@import "@fontsource/jua";
 
 /*
-  디자인 토큰 — docs/design 의 Figma 시안 PNG에서 추출한 값.
-  shadcn/ui 의 의미 이름(--primary, --card ...)에 맞춰 두어서, 컴포넌트를 추가하면 자동으로 이 테마를 쓴다.
-  시안에 없는 색(destructive 등)은 임시값이다. 시안이 바뀌면 이 블록만 고친다.
+  디자인 토큰 — Figma "오늘마케팅 · 시작 화면 2가지 시안" (PLACEMENT, 네이버 컬러 버전) 기준.
+  shadcn/ui 의미 이름(--primary, --card ...)에 맞춰 두어 컴포넌트가 자동으로 이 테마를 쓴다.
+  시안이 바뀌면 이 블록만 고친다.
 */
 :root {
-  --background: #f5f8f7; /* 페이지 배경 (연한 민트빛 회색) */
-  --foreground: #193b39; /* 제목·강조 글자 (아주 진한 초록) */
+  --background: #f6f9f7; /* 페이지 배경 */
+  --foreground: #242424; /* 제목·본문 */
 
   --card: #ffffff;
-  --card-foreground: #193b39;
+  --card-foreground: #242424;
   --popover: #ffffff;
-  --popover-foreground: #193b39;
+  --popover-foreground: #242424;
 
-  --primary: #216c63; /* 메인 진초록: 버튼, 사장님 말풍선, 별점 */
+  --primary: #008a3e; /* 네이버 그린: 버튼, 강조 글자, ON 배지 */
   --primary-foreground: #ffffff;
 
-  --secondary: #e4eeea; /* 연한 민트: 칩, 가게 사진 자리, 안내 박스 */
-  --secondary-foreground: #216c63;
-  --accent: #e4eeea;
-  --accent-foreground: #216c63;
+  --secondary: #e3f4e9; /* 연한 민트: 키워드 칩, 사장님 말풍선, 카드 테두리 */
+  --secondary-foreground: #008a3e;
+  --accent: #e3f4e9;
+  --accent-foreground: #008a3e;
 
-  --muted: #f5f8f7; /* 입력창 배경 */
-  --muted-foreground: #637975; /* 보조 글자, placeholder */
+  --muted: #f7f8f9;
+  --muted-foreground: #666d75; /* 보조 글자 */
 
-  --border: #d6e1dd; /* 카드·입력창 테두리 */
-  --input: #d6e1dd;
-  --ring: #216c63;
+  --border: #e3f4e9;
+  --input: #dfe7e2;
+  --ring: #008a3e;
 
-  --destructive: #c0392b; /* 시안에 없음: 임시값 */
+  --destructive: #e5484d; /* URL 오류 안내 */
 
-  --radius: 0.75rem; /* 입력창·버튼 12px */
+  /* 시안 고유 색 */
+  --panel: #ecf6f0; /* 큰 둥근 배경 패널 (#e3f4e9 50%) */
+  --star: #0068ff; /* 별점 */
+  --on-bg: #f0faf3;
+  --on-border: #c9edd7;
+  --on-text: #47765b;
+  --off-bg: #f7f8f9;
+  --off-border: #e7ebe8;
+  --off-pill: #e2e7e4;
+  --off-pill-text: #68726c;
+  --off-text: #7b837f;
+  --info: #edf3ff; /* 함께 확인하면 좋은 점 (연한 파랑) */
+  --info-foreground: #2f6fdb;
+
+  --radius: 1rem;
   color-scheme: light;
 }
 
@@ -56,15 +72,30 @@
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
 
-  /* 둥글기: rounded-card(큰 카드 24px), rounded-tile(작은 카드·사진 자리 16px), 칩은 rounded-full */
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --color-panel: var(--panel);
+  --color-star: var(--star);
+  --color-on-bg: var(--on-bg);
+  --color-on-border: var(--on-border);
+  --color-on-text: var(--on-text);
+  --color-off-bg: var(--off-bg);
+  --color-off-border: var(--off-border);
+  --color-off-pill: var(--off-pill);
+  --color-off-pill-text: var(--off-pill-text);
+  --color-off-text: var(--off-text);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  /* 둥글기: rounded-card(흰 카드 20px), rounded-tile(작은 카드·버튼 16px), rounded-panel(큰 배경 패널 90px) */
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-tile: 1rem;
-  --radius-card: 1.5rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 5.625rem;
 
-  --font-sans: var(--font-pretendard), ui-sans-serif, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-sans: "Noto Sans KR Variable", var(--font-pretendard), ui-sans-serif, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-logo: "Jua", "Noto Sans KR Variable", sans-serif;
 }
 
 @layer base {

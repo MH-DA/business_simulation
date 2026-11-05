@@ -21,6 +21,14 @@ export type Store = {
   coupons: string[];
   hasNaverPay?: boolean; // 네이버페이 사용 여부 (수집 전이면 비어 있음)
   lastNewsDate?: string; // 가장 최근 새소식 날짜, ISO 8601 (수집 전이면 비어 있음)
+  // ↓ Figma 분석 결과 화면(PLACEMENT)에서 쓰는 항목. 모두 선택: 수집 전이면 비어 있고 화면은 "확인 전"으로 보여준다.
+  closedDays?: string; // 휴무일 문구 그대로 (예: "연중무휴", "매주 월요일 휴무")
+  openHours?: string; // 영업시간 문구 그대로 (예: "09:30 ~ 22:00")
+  ownerPhotoCount?: number; // 사장님이 올린 업체 사진 수
+  hasPlacePlus?: boolean; // 플레이스 플러스 사용 흔적
+  instagramUrl?: string; // 플레이스에 등록된 인스타그램 링크
+  blogUrl?: string; // 플레이스에 등록된 블로그 링크
+  keywordParticipants?: number; // "이런 점이 좋았어요" 참여 인원 (비율의 분모로 쓴다)
   industry: Industry;
 };
 

@@ -20,6 +20,7 @@ export type ChatInput = {
   competitors: CollectedPlace[];
   knowledge: KnowledgeBase;
   generate: Generate;
+  profile?: string[]; // 성향 파악 답 (lib/profile.ts profileLines 로 검증한 줄)
 };
 
 const INTENT_SIGNAL: Record<Intent, string> = {
@@ -36,7 +37,7 @@ const FALLBACK_CONFIRM = {
 
 // 질문 → 비교 사실 + 지식 검색 → LLM 답변. 근거 카드는 검색 결과에 실제로 있는 지식 ID만 보여준다.
 export async function* runChat(input: ChatInput): AsyncGenerator<ChatEvent> {
-  const { question, place, competitors, knowledge, generate } = input;
+  const { question, place, competitors, knowledge, generate, profile } = input;
   const { intent, type } = classifyQuestion(question);
   const comparison = buildComparison(place.store, competitors[0]?.store, place.collectedAt);
 
@@ -58,6 +59,7 @@ export async function* runChat(input: ChatInput): AsyncGenerator<ChatEvent> {
     comparison,
     chunks,
     guardrails: knowledge.guardrails,
+    profile,
   });
 
   const filter = new MarkerFilter();

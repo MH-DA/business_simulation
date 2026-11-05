@@ -1,6 +1,6 @@
 import { NeedsCollection } from "@/components/NeedsCollection";
 import { ResultView } from "@/components/ResultView";
-import { ResultHeader } from "@/components/SiteHeader";
+import { Panel, SiteHeader } from "@/components/SiteHeader";
 import { resolvePlace } from "@/lib/places";
 import { getProvider } from "@/lib/providers";
 import { buildResultView } from "@/lib/result-view";
@@ -12,10 +12,10 @@ export default async function ResultPage({ params }: { params: Promise<{ placeId
   if (resolved.status === "needs_collection") {
     return (
       <>
-        <ResultHeader />
-        <main className="mx-auto w-full max-w-[640px] px-6 py-16">
+        <SiteHeader />
+        <Panel className="flex min-h-[720px] flex-col items-center justify-center">
           <NeedsCollection />
-        </main>
+        </Panel>
       </>
     );
   }
@@ -24,8 +24,10 @@ export default async function ResultPage({ params }: { params: Promise<{ placeId
   const view = buildResultView(resolved.data, competitors, resolved.isDemo);
   return (
     <>
-      <ResultHeader />
-      <ResultView view={view} />
+      <SiteHeader />
+      <Panel>
+        <ResultView view={view} />
+      </Panel>
     </>
   );
 }
