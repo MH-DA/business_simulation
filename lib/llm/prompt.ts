@@ -12,6 +12,7 @@ export type PromptInput = {
   comparison: Comparison;
   chunks: KnowledgeChunk[];
   guardrails: Guardrail[];
+  profile?: string[];
 };
 
 const TYPE_GUIDE: Record<QuestionType, string> = {
@@ -26,7 +27,7 @@ export const MARKER_RULES = [
   "[[확인: 사장님께 물을 질문 | 버튼1 | 버튼2 | 버튼3]]  ← 판단 보조형이거나 확인이 꼭 필요할 때만.",
 ].join("\n");
 
-export function buildSystemPrompt(type: QuestionType, guardrails: Guardrail[]): string {
+export function buildSystemPrompt(type: QuestionType, guardrails: Guardrail[], profile: string[] = []): string {
   return [
     "너는 동네 소상공인 사장님의 네이버 플레이스 마케팅을 돕는 상담 도우미다. 해요체로 짧고 쉽게 답한다.",
     "",
@@ -39,6 +40,9 @@ export function buildSystemPrompt(type: QuestionType, guardrails: Guardrail[]): 
     "6. 아래 가드레일에 어긋나는 제안은 하지 않는다.",
     ...guardrails.map((g) => `   - ${g.id} ${g.rule}: ${g.detail}`),
     "",
+    ...(profile.length
+      ? ["[사장님 상황 (사장님이 직접 고른 답)]", ...profile.map((l) => `- ${l}`), "이 상황(예산·시간·경험)에 맞는 실행안을 고르고, 벗어나는 방법은 권하지 않는다.", ""]
+      : []),
     `[이번 질문 유형: ${type}]`,
     TYPE_GUIDE[type],
     "",
@@ -67,9 +71,9 @@ function chunkBlock(c: KnowledgeChunk, industry: Industry): string {
 
 export function buildUserPrompt(i: PromptInput): string {
   const table = i.comparison.topName
-    ? `| 항목 | 우리 가게(${i.storeName}) | 검색 1위 가게(${i.comparison.topName}) |\n|---|---|---|\n` +
+    ? `| 항목 | 우리 가게(${i.storeName}) | 사장님이 고른 비교 가게(${i.comparison.topName}) |\n|---|---|---|\n` +
       i.comparison.rows.map((r) => `| ${r.item} | ${r.mine} | ${r.top} |`).join("\n")
-    : `비교할 1위 가게 정보가 아직 없다. 우리 가게(${i.storeName}) 값:\n` +
+    : `사장님이 고른 비교 가게가 없다. 우리 가게(${i.storeName}) 값:\n` +
       i.comparison.rows.map((r) => `- ${r.item}: ${r.mine}`).join("\n");
 
   const knowledge = i.chunks.length
@@ -80,5 +84,5 @@ export function buildUserPrompt(i: PromptInput): string {
 }
 
 export function buildPrompt(i: PromptInput): Prompt {
-  return { system: buildSystemPrompt(i.type, i.guardrails), user: buildUserPrompt(i) };
+  return { system: buildSystemPrompt(i.type, i.guardrails, i.profile), user: buildUserPrompt(i) };
 }

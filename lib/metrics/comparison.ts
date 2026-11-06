@@ -1,11 +1,11 @@
 import type { Store } from "../../types/index.ts";
 
-// 경쟁사 비교: 우리 가게와 추적 키워드 검색 1위 가게의 9개 항목을 나란히 놓는다.
+// 경쟁사 비교: 우리 가게와 사장님이 직접 고른 비교 가게(URL 입력)의 9개 항목을 나란히 놓는다.
 // 점수·높음/낮음 판정·평균은 없다. 값과 날짜 차이만 만든다. (README "경쟁사 분석 흐름")
 export type ComparisonRow = { item: string; mine: string; top: string };
 
 export type Comparison = {
-  topName?: string; // 비교 대상(검색 1위 가게)이 없으면 비어 있다
+  topName?: string; // 비교 대상(사장님이 고른 가게)이 없으면 비어 있다
   rows: ComparisonRow[];
   // 지식 조각을 찾는 열쇠. 값 두 개를 견준 사실(없음, 더 많음, 더 오래됨)만으로 만들고 임계값은 쓰지 않는다.
   signalTags: string[];

@@ -24,3 +24,10 @@ export async function resolvePlace(placeId: string): Promise<ResolvedPlace> {
 export async function canAnalyze(placeId: string): Promise<boolean> {
   return isMockMode() || (await hasPlace(placeId));
 }
+
+// 사장님이 직접 고른 비교(경쟁) 가게: 샘플로 대신 보여주지 않는다. 수집해 둔 가게만 비교한다.
+export async function resolveCompetitor(placeId: string): Promise<ResolvedPlace> {
+  if (!(await hasPlace(placeId))) return { status: "needs_collection" };
+  const data = await getProvider().collect(placeId);
+  return { status: "ok", data, isDemo: false };
+}
