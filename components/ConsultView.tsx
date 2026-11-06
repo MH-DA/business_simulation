@@ -34,7 +34,7 @@ function parseSaved(raw: string | null): ProfileAnswers | null {
 
 const noSubscribe = () => () => {};
 
-export function ConsultView({ store, topKeywords }: { store: StoreBrief; topKeywords: string[] }) {
+export function ConsultView({ store, topKeywords, competitorId }: { store: StoreBrief; topKeywords: string[]; competitorId?: string }) {
   // 서버 렌더에서는 저장값이 없다고 보고(null), 브라우저에서 sessionStorage 를 읽는다.
   const savedRaw = useSyncExternalStore(noSubscribe, () => readSaved(store.placeId), () => null);
   const saved = parseSaved(savedRaw);
@@ -52,7 +52,7 @@ export function ConsultView({ store, topKeywords }: { store: StoreBrief; topKeyw
   }
 
   return done ? (
-    <ChatRoom store={store} topKeywords={topKeywords} answers={answers} onRedo={() => setOverride({ answers, done: false })} />
+    <ChatRoom store={store} topKeywords={topKeywords} competitorId={competitorId} answers={answers} onRedo={() => setOverride({ answers, done: false })} />
   ) : (
     <ProfileWizard key={answers.join(",")} initial={answers} onDone={finish} />
   );
@@ -183,7 +183,19 @@ const QUICK = ["우리 가게를 더 많이 알리고 싶어요", "플레이스 
 const UNAVAILABLE = "챗봇을 준비 중이에요. 잠시 뒤에 다시 시도해 주세요.";
 const FAILED = "답변을 만드는 중 문제가 생겼어요. 잠시 뒤 다시 시도해 주세요.";
 
-function ChatRoom({ store, topKeywords, answers, onRedo }: { store: StoreBrief; topKeywords: string[]; answers: ProfileAnswers; onRedo: () => void }) {
+function ChatRoom({
+  store,
+  topKeywords,
+  competitorId,
+  answers,
+  onRedo,
+}: {
+  store: StoreBrief;
+  topKeywords: string[];
+  competitorId?: string;
+  answers: ProfileAnswers;
+  onRedo: () => void;
+}) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const nextId = useRef(1);
@@ -209,7 +221,7 @@ function ChatRoom({ store, topKeywords, answers, onRedo }: { store: StoreBrief; 
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ placeId: store.placeId, question, profile: answers }),
+        body: JSON.stringify({ placeId: store.placeId, question, profile: answers, competitorId }),
       });
       if (!res.ok || !res.body) {
         const info = (await res.json().catch(() => null)) as { status?: string } | null;
@@ -268,8 +280,14 @@ function ChatRoom({ store, topKeywords, answers, onRedo }: { store: StoreBrief; 
           </div>
         )}
         <Link
+          href={competitorId ? `/compare/${encodeURIComponent(store.placeId)}/${encodeURIComponent(competitorId)}` : `/compare/${encodeURIComponent(store.placeId)}`}
+          className="mt-6 flex h-11 items-center justify-center rounded-xl border border-on-border bg-card text-sm font-bold text-primary"
+        >
+          {competitorId ? "경쟁 가게 비교 다시 보기 ↗" : "경쟁 가게와 비교하기 ↗"}
+        </Link>
+        <Link
           href={`/result/${encodeURIComponent(store.placeId)}`}
-          className="mt-6 flex h-11 items-center justify-center rounded-xl border border-[#9cc0ff] bg-[#eaf2ff] text-sm font-bold text-info-foreground"
+          className="mt-2.5 flex h-11 items-center justify-center rounded-xl border border-[#9cc0ff] bg-[#eaf2ff] text-sm font-bold text-info-foreground"
         >
           가게 분석 다시 보기 ↗
         </Link>

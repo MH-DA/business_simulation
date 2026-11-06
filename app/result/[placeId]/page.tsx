@@ -2,7 +2,6 @@ import { NeedsCollection } from "@/components/NeedsCollection";
 import { ResultView } from "@/components/ResultView";
 import { Panel, SiteHeader } from "@/components/SiteHeader";
 import { resolvePlace } from "@/lib/places";
-import { getProvider } from "@/lib/providers";
 import { buildResultView } from "@/lib/result-view";
 
 export default async function ResultPage({ params }: { params: Promise<{ placeId: string }> }) {
@@ -20,8 +19,7 @@ export default async function ResultPage({ params }: { params: Promise<{ placeId
     );
   }
 
-  const competitors = await getProvider().getCompetitors(resolved.data.store);
-  const view = buildResultView(resolved.data, competitors, resolved.isDemo);
+  const view = buildResultView(resolved.data, resolved.isDemo);
   return (
     <>
       <SiteHeader />

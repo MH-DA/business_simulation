@@ -1,14 +1,14 @@
 "use client";
 
-import { ArrowDown, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, X } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Insights } from "@/lib/insights";
 import type { ResultViewModel, StatusItem } from "@/lib/result-view";
 
-// Figma 04 · 가게 분석 결과 (현황 / 더보기 / 리뷰 / 외부채널, 제안) + 1위 가게 비교(시안 추가 예정, 같은 스타일로 만든 것)
+// Figma 04 · 가게 분석 결과 (현황 / 더보기 / 리뷰 / 외부채널, 제안). 다음 단계는 경쟁 가게 비교(/compare).
 
-const SLIDES = ["현황", "리뷰", "1위 가게 비교", "마케팅 자산·제안"] as const;
+const SLIDES = ["현황", "리뷰", "마케팅 자산·제안"] as const;
 
 const fmt = (n?: number) => (n === undefined ? "-" : n.toLocaleString("ko-KR"));
 
@@ -84,11 +84,10 @@ export function ResultView({ view }: { view: ResultViewModel }) {
           <div className="flex-1">
             {slide === 0 && <StatusSlide items={view.status} />}
             {slide === 1 && <ReviewSlide view={view} insights={insights} />}
-            {slide === 2 && <CompareSlide view={view} />}
-            {slide === 3 && <AssetSlide items={view.assets} insights={insights} />}
+            {slide === 2 && <AssetSlide items={view.assets} insights={insights} />}
           </div>
           {slide === SLIDES.length - 1 && (
-            <p className="mt-4 text-center text-xs text-primary">더 나누고 싶은 고민이 있다면, 아래에서 저랑 이야기해요!</p>
+            <p className="mt-4 text-center text-xs text-primary">비교해 보고 싶은 가게가 있다면, 다음 단계에서 나란히 볼 수 있어요!</p>
           )}
           <nav className="mt-4 flex items-center justify-center gap-3" aria-label="분석 결과 넘기기">
             <button type="button" onClick={() => setSlide((s) => Math.max(0, s - 1))} disabled={slide === 0} aria-label="이전" className="text-muted-foreground disabled:opacity-30">
@@ -119,10 +118,10 @@ export function ResultView({ view }: { view: ResultViewModel }) {
 
       <div className="mt-11 flex justify-center">
         <Link
-          href={`/consult/${encodeURIComponent(store.placeId)}`}
+          href={`/compare/${encodeURIComponent(store.placeId)}`}
           className="inline-flex h-[60px] w-[240px] items-center justify-center gap-1 rounded-tile bg-primary text-[17px] font-bold text-primary-foreground transition hover:brightness-110"
         >
-          대화 시작하기 <ArrowDown className="size-[18px]" aria-hidden />
+          다음 단계로 <ArrowRight className="size-[18px]" aria-hidden />
         </Link>
       </div>
 
@@ -259,39 +258,6 @@ function ReviewSlide({ view, insights }: { view: ResultViewModel; insights: Insi
       {review.facts.length > 0 && (
         <p className="mt-3 text-xs text-off-text">
           {review.facts.map((f) => `${f.label} ${f.value}`).join(" · ")} ({review.facts[0].note})
-        </p>
-      )}
-    </>
-  );
-}
-
-function CompareSlide({ view }: { view: ResultViewModel }) {
-  const { comparison, store } = view;
-  return (
-    <>
-      <SlideTitle title="검색 1위 가게와 나란히 보기" note="점수 없이 같은 항목을 나란히 놓았어요. 무엇을 먼저 할지는 사장님이 정해요." />
-      {comparison.topName ? (
-        <table className="mt-4 w-full table-fixed text-sm">
-          <thead>
-            <tr className="border-b text-left text-off-text">
-              <th className="w-[28%] py-2 font-medium">항목</th>
-              <th className="py-2 font-bold text-primary">{store.name}</th>
-              <th className="py-2 font-medium">{comparison.topName}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {comparison.rows.map((r) => (
-              <tr key={r.item} className="border-b border-off-border last:border-0">
-                <td className="py-[7px] text-muted-foreground">{r.item}</td>
-                <td className="py-[7px] font-bold">{r.mine}</td>
-                <td className="py-[7px]">{r.top}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <p className="mt-6 rounded-tile bg-off-bg px-4 py-6 text-center text-sm text-off-text">
-          비교할 1위 가게 정보가 아직 없어요. 같은 지역·업종 검색 1위 가게를 수집하면 여기에 나란히 보여드려요.
         </p>
       )}
     </>

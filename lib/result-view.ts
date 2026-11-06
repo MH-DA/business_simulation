@@ -1,5 +1,5 @@
 import type { CollectedPlace, Store } from "@/types";
-import { buildComparison, daysSince, type Comparison } from "@/lib/metrics/comparison";
+import { daysSince } from "@/lib/metrics/comparison";
 
 // 분석 결과 화면(Figma 04)에 그대로 뿌리는 값. 점수·순위 없이 사실만 담는다.
 // "확인 전"(unknown)은 수집하지 못한 항목이다. 없음(off)과 구분해서 보여준다.
@@ -21,7 +21,6 @@ export type ResultViewModel = {
     topKeywords: { keyword: string; count: number }[];
     facts: ReviewFact[]; // 수집한 리뷰에서 센 사실 (재방문, 답글, 사진)
   };
-  comparison: Comparison;
   assets: StatusItem[];
 };
 
@@ -29,7 +28,7 @@ const NEWS_WINDOW_DAYS = 90;
 
 const pct = (n: number, d: number) => `${Math.round((n / d) * 100)}%`;
 
-function status(store: Store, collectedAt: string): StatusItem[] {
+export function statusItems(store: Store, collectedAt: string): StatusItem[] {
   const photo: StatusItem =
     store.ownerPhotoCount === undefined
       ? { label: "업체 등록 사진", state: "unknown", text: "업체 사진 정보를 확인하지 못했어요" }
@@ -96,7 +95,7 @@ function reviewFacts(place: CollectedPlace): ReviewFact[] {
   return facts.map((f, i) => (i === 0 ? { ...f, note: `${note} · ${f.note}` } : f));
 }
 
-export function buildResultView(place: CollectedPlace, competitors: CollectedPlace[], isDemo: boolean): ResultViewModel {
+export function buildResultView(place: CollectedPlace, isDemo: boolean): ResultViewModel {
   const { store, keywordStats, collectedAt } = place;
   const sorted = [...keywordStats].sort((a, b) => b.count - a.count);
   const chips = (store.representativeKeywords.length ? store.representativeKeywords : sorted.map((k) => k.keyword)).slice(0, 3);
@@ -115,14 +114,13 @@ export function buildResultView(place: CollectedPlace, competitors: CollectedPla
     chips,
     isDemo,
     collectedAt,
-    status: status(store, collectedAt),
+    status: statusItems(store, collectedAt),
     review: {
       visitorCount: store.visitorReviewCount,
       blogCount: store.blogReviewCount,
       topKeywords: sorted.slice(0, 5).map((k) => ({ keyword: k.keyword, count: k.count })),
       facts: reviewFacts(place),
     },
-    comparison: buildComparison(store, competitors[0]?.store, collectedAt),
     assets,
   };
 }

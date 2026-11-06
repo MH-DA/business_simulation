@@ -71,9 +71,9 @@ function chunkBlock(c: KnowledgeChunk, industry: Industry): string {
 
 export function buildUserPrompt(i: PromptInput): string {
   const table = i.comparison.topName
-    ? `| 항목 | 우리 가게(${i.storeName}) | 검색 1위 가게(${i.comparison.topName}) |\n|---|---|---|\n` +
+    ? `| 항목 | 우리 가게(${i.storeName}) | 사장님이 고른 비교 가게(${i.comparison.topName}) |\n|---|---|---|\n` +
       i.comparison.rows.map((r) => `| ${r.item} | ${r.mine} | ${r.top} |`).join("\n")
-    : `비교할 1위 가게 정보가 아직 없다. 우리 가게(${i.storeName}) 값:\n` +
+    : `사장님이 고른 비교 가게가 없다. 우리 가게(${i.storeName}) 값:\n` +
       i.comparison.rows.map((r) => `- ${r.item}: ${r.mine}`).join("\n");
 
   const knowledge = i.chunks.length
