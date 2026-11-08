@@ -28,3 +28,6 @@ yarn-error.log*
 __pycache__/
 *.pyc
 .venv/
+
+# 수집 원본 (작성자 등 개인정보가 들어 있어 올리지 않는다. 변환기 결과만 data/places/ 에 올린다)
+data/raw/
