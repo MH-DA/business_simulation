@@ -14,7 +14,7 @@ export type KeywordFact = {
   keyword: string;
   group: KeywordGroup;
   count: number;
-  ratioPct: number; // 선택 인원 ÷ 방문자 리뷰 수, % (반올림)
+  ratioPct: number; // 선택 인원 ÷ "이런 점이 좋았어요" 참여 인원, % (반올림)
   competitorAvgPct?: number; // 경쟁 매장 평균 비율, % (반올림)
   gapPp?: number; // 반올림한 두 값의 차이 (내 값 − 경쟁 평균)
 };
@@ -32,8 +32,9 @@ export type MetricsResult = {
 const pct = (r: number) => Math.round(r * 100);
 const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
+// 분모는 방문자 리뷰 수가 아니라 키워드 참여 인원이다 (프로젝트 지침 4장). 참여 인원이 없으면 저장된 비율을 쓴다.
 function ratioOf(count: number, stored: number, store: Store): number {
-  return store.visitorReviewCount ? count / store.visitorReviewCount : stored;
+  return store.keywordParticipants ? count / store.keywordParticipants : stored;
 }
 
 export function infoChecksOf(store: Store): InfoCheck[] {

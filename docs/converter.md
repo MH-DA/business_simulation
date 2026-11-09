@@ -1,0 +1,77 @@
+# 변환기 사용법 (수집 결과 → CollectedPlace)
+
+`scripts/convert_place.py`는 수집기 결과(JSON)와 Octoparse 리뷰 파일(엑셀 또는 CSV)을 합쳐서
+웹이 읽는 형식(`types/index.ts`의 `CollectedPlace`)으로 바꾸고 `data/places/<가게번호>.json`에 저장합니다.
+
+## 변환기가 하는 일
+
+- 작성자, 닉네임, 프로필, 링크, 팔로워 열은 **읽지도 저장하지도 않습니다**. 결과 화면에 어떤 열을 뺐는지 열 이름만 보여줍니다.
+- 리뷰는 아는 열(본문, 방문일, 방문 횟수, 인증 수단, 사진 수, 사장님 답글, 선택 키워드)만 저장합니다. 모르는 열은 저장하지 않고 이름만 알려줍니다.
+- 리뷰 본문의 휴대전화 번호는 `[전화번호 삭제]`로 바꿉니다.
+- 수집하지 못한 값(예: 네이버페이를 확인하지 못함)은 "없음"으로 바꾸지 않고 비워 둡니다. 화면에는 "확인 전"으로 나옵니다.
+- 키워드 비율은 **선택 인원 ÷ "이런 점이 좋았어요" 참여 인원**으로 계산합니다. 참여 인원이 없으면 비율을 지어내지 않고 오류를 냅니다.
+- 리뷰가 최신순이 아니면 경고합니다.
+
+## 처음 한 번만: 준비
+
+PowerShell을 열고 저장소 폴더로 이동한 뒤 실행합니다.
+
+```powershell
+cd C:\경로\business_simulation
+pip install -r scripts\requirements.txt
+```
+
+`python`이 없다는 오류가 나면 python.org에서 Python 3.10 이상을 설치하고, 설치 화면에서 "Add python.exe to PATH"를 체크합니다.
+
+## 변환하기
+
+1. 수집기 결과 JSON과 Octoparse 리뷰 파일을 저장소 밖의 편한 폴더(예: `C:\수집`)에 둡니다. **원본 리뷰 파일은 깃에 올리지 않습니다** (작성자 정보가 들어 있음).
+2. 먼저 저장하지 않고 결과만 확인합니다.
+
+```powershell
+python scripts\convert_place.py --store C:\수집\가게.json --reviews C:\수집\리뷰.xlsx --dry-run
+```
+
+3. 화면에 나온 요약을 확인합니다.
+   - `확인 전(값 없음)`: 수집하지 못한 항목. 수집기에 있어야 하는 값이 여기 있으면 키 이름이 다를 수 있습니다 (아래 "열 이름이 다를 때").
+   - `모르는 리뷰 열`, `모르는 가게 정보 키`: 저장하지 않은 항목. 필요한 값이면 연결해 줍니다.
+   - `[주의]`: 확인이 필요한 부분.
+4. 문제가 없으면 `--dry-run`을 빼고 다시 실행합니다. `data\places\<가게번호>.json`이 만들어집니다.
+
+## 자주 쓰는 옵션
+
+| 옵션 | 언제 |
+|---|---|
+| `--industry 카페` | 업종을 자동으로 못 정할 때 (음식점, 카페, 공방, 헬스장, 스터디카페 중 하나) |
+| `--place-id 1234567` | 수집 결과에 가게 번호가 없을 때 |
+| `--participants 200` | "이런 점이 좋았어요" 참여 인원이 수집 결과에 없을 때 |
+| `--map "Text1=body"` | Octoparse 열 이름이 달라서 본문 등을 못 찾을 때 |
+| `--store-map "title=name"` | 수집기 JSON의 키 이름이 달라서 못 찾을 때 |
+| `--force` | 이미 있는 파일을 덮어쓸 때 |
+| `--out 경로` | 다른 곳에 저장할 때 |
+
+리뷰만 새로 받았다면, 이미 만든 파일에 리뷰만 바꿔 넣을 수 있습니다.
+
+```powershell
+python scripts\convert_place.py --store data\places\1234567.json --reviews C:\수집\새리뷰.xlsx --force
+```
+
+## 열 이름이 다를 때
+
+`--map`에 쓸 수 있는 리뷰 필드: `body`(본문), `visitedDate`(방문일), `createdDate`(작성일), `visitCount`(방문 횟수),
+`authType`(인증 수단), `photoCount`(사진 수), `ownerReply`(사장님 답글), `hasOwnerReply`(답글 여부), `votedKeywords`(선택 키워드).
+한국어 이름(예: `--map "Field3=방문일"`)으로 써도 됩니다.
+
+자주 나오는 열 이름이라면 매번 `--map`을 쓰지 말고 `scripts/convert_place.py`의 `REVIEW_ALIASES`나 `STORE_ALIASES` 목록에 추가해 주세요.
+
+## 아직 확인하지 못한 것
+
+- 수집기 v6.1의 실제 JSON 키 이름과 Octoparse 엑셀의 실제 열 이름을 아직 보지 못했습니다. 위 목록은 예상한 이름입니다.
+  실제 파일로 `--dry-run`을 한 번 돌려 보고, 못 찾은 항목은 목록에 추가해야 합니다.
+- 리뷰 본문 속 개인정보는 전화번호만 지웁니다. 이름이나 주소가 본문에 직접 적힌 경우는 걸러내지 못합니다.
+
+## 테스트
+
+```powershell
+python -m unittest scripts/test_convert_place.py -v
+```

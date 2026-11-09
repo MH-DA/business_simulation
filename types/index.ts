@@ -32,7 +32,7 @@ export type Store = {
   industry: Industry;
 };
 
-// ratio = count / visitorReviewCount (원 숫자 비교 금지, 항상 비율로 비교)
+// ratio = count / keywordParticipants ("이런 점이 좋았어요" 참여 인원. 원 숫자 비교 금지, 항상 비율로 비교)
 export type KeywordStat = { keyword: string; count: number; ratio: number };
 
 // 리뷰 원문. 작성자 닉네임·프로필·사진 파일은 저장 금지 (개인정보).

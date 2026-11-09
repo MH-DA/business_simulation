@@ -18,7 +18,13 @@ function place(s: Store, kws: [string, number][]): CollectedPlace {
   };
 }
 
-test("비율 = 선택 인원 ÷ 방문자 리뷰 수", () => {
+test("비율의 분모는 참여 인원 (방문자 리뷰 수가 아님)", () => {
+  const s = store({ visitorReviewCount: 1000, keywordParticipants: 200 });
+  const r = computeMetrics(place(s, [["시설이 깔끔해요", 140]]), []);
+  assert.equal(r.facts[0].ratioPct, 70); // 140 ÷ 200. 리뷰 수(1000)로 나누면 14가 된다
+});
+
+test("참여 인원이 없으면 저장된 비율을 쓴다", () => {
   const r = computeMetrics(place(store(), [["시설이 깔끔해요", 140]]), []);
   assert.equal(r.facts[0].ratioPct, 70);
   assert.equal(r.facts[0].gapPp, undefined); // 경쟁 매장 없으면 차이 없음
