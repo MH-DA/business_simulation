@@ -28,6 +28,52 @@ export function daysSince(date: string | undefined, collectedAt: string): number
 
 const daysText = (n: number | undefined) => (n === undefined ? UNKNOWN : n === 0 ? "오늘" : `${n}일 전`);
 
+// 두 가게의 차이: 같은 항목에서 각 가게 쪽이 더 많거나, 있거나, 더 최근인 것만 모은다.
+// "강점/약점" 같은 판정이나 중요도는 붙이지 않는다. 한쪽이라도 수집 전이면 비교하지 않는다.
+export type Difference = { item: string; mine: string; other: string };
+export type Differences = { mine: Difference[]; other: Difference[] };
+
+export function buildDifferences(mine: Store, other: Store): Differences {
+  const out: Differences = { mine: [], other: [] };
+  const push = (a: number, b: number, d: Difference) => {
+    if (a > b) out.mine.push(d);
+    else if (b > a) out.other.push(d);
+  };
+
+  const numbers: [string, (s: Store) => number | undefined, (n: number) => string][] = [
+    ["별점", (s) => s.rating, (n) => `★ ${n.toFixed(1)}`],
+    ["방문자 리뷰 수", (s) => s.visitorReviewCount, (n) => `${n.toLocaleString("ko-KR")}개`],
+    ["블로그 리뷰 수", (s) => s.blogReviewCount, (n) => `${n.toLocaleString("ko-KR")}개`],
+  ];
+  for (const [item, get, fmt] of numbers) {
+    const a = get(mine);
+    const b = get(other);
+    if (a !== undefined && b !== undefined) push(a, b, { item, mine: fmt(a), other: fmt(b) });
+  }
+
+  const flags: [string, (s: Store) => boolean | undefined][] = [
+    ["소개글", (s) => Boolean(s.intro?.trim())],
+    ["편의시설", (s) => s.amenities.length > 0],
+    ["쿠폰", (s) => s.coupons.length > 0],
+    ["예약 탭", (s) => s.hasBookingTab ?? s.tabs.includes("예약")],
+    ["네이버페이", (s) => s.hasNaverPay],
+  ];
+  for (const [item, get] of flags) {
+    const a = get(mine);
+    const b = get(other);
+    if (a !== undefined && b !== undefined && a !== b) {
+      push(Number(a), Number(b), { item, mine: a ? "있음" : "없음", other: b ? "있음" : "없음" });
+    }
+  }
+
+  const ta = mine.lastNewsDate ? Date.parse(mine.lastNewsDate) : NaN;
+  const tb = other.lastNewsDate ? Date.parse(other.lastNewsDate) : NaN;
+  if (!Number.isNaN(ta) && !Number.isNaN(tb)) {
+    push(ta, tb, { item: "최근 새소식", mine: mine.lastNewsDate!.slice(0, 10), other: other.lastNewsDate!.slice(0, 10) });
+  }
+  return out;
+}
+
 export function buildComparison(mine: Store, top: Store | undefined, collectedAt: string): Comparison {
   const t = (f: (s: Store) => string) => (top ? f(top) : NONE);
   const myNews = daysSince(mine.lastNewsDate, collectedAt);
