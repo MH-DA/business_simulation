@@ -1,3 +1,4 @@
+import { hasBlog, hasCoupons, hasInstagram } from "@/lib/checked";
 import type { CollectedPlace, Store } from "@/types";
 import { daysSince } from "@/lib/metrics/comparison";
 
@@ -52,9 +53,12 @@ export function statusItems(store: Store, collectedAt: string): StatusItem[] {
         ? { label: "새소식 업데이트", state: "on", text: days === 0 ? "오늘 새소식을 올렸어요" : `${days}일 전에 새소식을 올렸어요` }
         : { label: "새소식 업데이트", state: "off", text: `최근 ${NEWS_WINDOW_DAYS}일 내 새소식이 없어요` };
 
-  const plus: StatusItem = store.hasPlacePlus
-    ? { label: "플레이스 플러스", state: "on", text: "플레이스 플러스를 사용하고 있어요" }
-    : { label: "플레이스 플러스", state: "off", text: "사용 정보가 없어요" };
+  const plus: StatusItem =
+    store.hasPlacePlus === undefined
+      ? { label: "플레이스 플러스", state: "unknown", text: "플레이스 플러스 정보를 확인하지 못했어요" }
+      : store.hasPlacePlus
+        ? { label: "플레이스 플러스", state: "on", text: "플레이스 플러스를 사용하고 있어요" }
+        : { label: "플레이스 플러스", state: "off", text: "사용 정보가 없어요" };
 
   const pay: StatusItem =
     store.hasNaverPay === undefined
@@ -64,9 +68,11 @@ export function statusItems(store: Store, collectedAt: string): StatusItem[] {
         : { label: "네이버 페이 사용", state: "off", text: "네이버 페이 결제 정보가 없어요" };
 
   const coupon: StatusItem =
-    store.coupons.length > 0
-      ? { label: "쿠폰", state: "on", text: `이용 가능한 쿠폰이 ${store.coupons.length}개 있어요` }
-      : { label: "쿠폰", state: "off", text: "이용 가능한 쿠폰이 없어요" };
+    hasCoupons(store) === undefined
+      ? { label: "쿠폰", state: "unknown", text: "쿠폰 정보를 확인하지 못했어요" }
+      : store.coupons.length > 0
+        ? { label: "쿠폰", state: "on", text: `이용 가능한 쿠폰이 ${store.coupons.length}개 있어요` }
+        : { label: "쿠폰", state: "off", text: "이용 가능한 쿠폰이 없어요" };
 
   return [photo, reserve, news, plus, pay, coupon];
 }
@@ -101,12 +107,16 @@ export function buildResultView(place: CollectedPlace, isDemo: boolean): ResultV
   const chips = (store.representativeKeywords.length ? store.representativeKeywords : sorted.map((k) => k.keyword)).slice(0, 3);
 
   const assets: StatusItem[] = [
-    store.instagramUrl
-      ? { label: "인스타그램", state: "on", text: "네이버 플레이스에 인스타그램 링크가 등록되어 있어요." }
-      : { label: "인스타그램", state: "off", text: "네이버 플레이스에 등록된 인스타그램 링크를 찾지 못했어요." },
-    store.blogUrl
-      ? { label: "네이버 블로그", state: "on", text: "네이버 플레이스에 블로그 링크가 등록되어 있어요." }
-      : { label: "네이버 블로그", state: "off", text: "네이버 플레이스에 등록된 블로그 링크를 찾지 못했어요." },
+    hasInstagram(store) === undefined
+      ? { label: "인스타그램", state: "unknown", text: "인스타그램 링크 정보를 확인하지 못했어요." }
+      : store.instagramUrl
+        ? { label: "인스타그램", state: "on", text: "네이버 플레이스에 인스타그램 링크가 등록되어 있어요." }
+        : { label: "인스타그램", state: "off", text: "네이버 플레이스에 등록된 인스타그램 링크를 찾지 못했어요." },
+    hasBlog(store) === undefined
+      ? { label: "네이버 블로그", state: "unknown", text: "블로그 링크 정보를 확인하지 못했어요." }
+      : store.blogUrl
+        ? { label: "네이버 블로그", state: "on", text: "네이버 플레이스에 블로그 링크가 등록되어 있어요." }
+        : { label: "네이버 블로그", state: "off", text: "네이버 플레이스에 등록된 블로그 링크를 찾지 못했어요." },
   ];
 
   return {

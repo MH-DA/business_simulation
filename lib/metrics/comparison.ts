@@ -1,4 +1,5 @@
 import type { Store } from "../../types/index.ts";
+import { hasAmenities, hasBookingTab, hasCoupons, hasIntro } from "../checked.ts";
 
 // 경쟁사 비교: 우리 가게와 사장님이 직접 고른 비교 가게(URL 입력)의 9개 항목을 나란히 놓는다.
 // 점수·높음/낮음 판정·평균은 없다. 값과 날짜 차이만 만든다. (README "경쟁사 분석 흐름")
@@ -52,10 +53,10 @@ export function buildDifferences(mine: Store, other: Store): Differences {
   }
 
   const flags: [string, (s: Store) => boolean | undefined][] = [
-    ["소개글", (s) => Boolean(s.intro?.trim())],
-    ["편의시설", (s) => s.amenities.length > 0],
-    ["쿠폰", (s) => s.coupons.length > 0],
-    ["예약 탭", (s) => s.hasBookingTab ?? s.tabs.includes("예약")],
+    ["소개글", hasIntro],
+    ["편의시설", hasAmenities],
+    ["쿠폰", hasCoupons],
+    ["예약 탭", hasBookingTab],
     ["네이버페이", (s) => s.hasNaverPay],
   ];
   for (const [item, get] of flags) {
@@ -83,17 +84,17 @@ export function buildComparison(mine: Store, top: Store | undefined, collectedAt
     { item: "별점", mine: num(mine.rating), top: t((s) => num(s.rating)) },
     { item: "방문자 리뷰 수", mine: num(mine.visitorReviewCount), top: t((s) => num(s.visitorReviewCount)) },
     { item: "블로그 리뷰 수", mine: num(mine.blogReviewCount), top: t((s) => num(s.blogReviewCount)) },
-    { item: "소개글", mine: yesNo(Boolean(mine.intro?.trim())), top: t((s) => yesNo(Boolean(s.intro?.trim()))) },
-    { item: "편의시설", mine: yesNo(mine.amenities.length > 0), top: t((s) => yesNo(s.amenities.length > 0)) },
-    { item: "쿠폰", mine: yesNo(mine.coupons.length > 0), top: t((s) => yesNo(s.coupons.length > 0)) },
-    { item: "예약 탭", mine: yesNo(mine.hasBookingTab ?? mine.tabs.includes("예약")), top: t((s) => yesNo(s.hasBookingTab ?? s.tabs.includes("예약"))) },
+    { item: "소개글", mine: yesNo(hasIntro(mine)), top: t((s) => yesNo(hasIntro(s))) },
+    { item: "편의시설", mine: yesNo(hasAmenities(mine)), top: t((s) => yesNo(hasAmenities(s))) },
+    { item: "쿠폰", mine: yesNo(hasCoupons(mine)), top: t((s) => yesNo(hasCoupons(s))) },
+    { item: "예약 탭", mine: yesNo(hasBookingTab(mine)), top: t((s) => yesNo(hasBookingTab(s))) },
     { item: "네이버페이", mine: yesNo(mine.hasNaverPay), top: t((s) => yesNo(s.hasNaverPay)) },
     { item: "최근 새소식", mine: daysText(myNews), top: top ? daysText(topNews) : NONE },
   ];
 
   const signalTags: string[] = [];
-  if (mine.coupons.length === 0) signalTags.push("coupon_missing");
-  if (!mine.intro?.trim()) signalTags.push("intro_weak");
+  if (hasCoupons(mine) === false) signalTags.push("coupon_missing");
+  if (hasIntro(mine) === false) signalTags.push("intro_weak");
   if (top && (mine.visitorReviewCount ?? 0) < (top.visitorReviewCount ?? 0)) signalTags.push("review_count_low");
   if (myNews !== undefined && topNews !== undefined && myNews > topNews) signalTags.push("news_inactive");
 

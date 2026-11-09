@@ -30,7 +30,12 @@ export type Store = {
   blogUrl?: string; // 플레이스에 등록된 블로그 링크
   keywordParticipants?: number; // "이런 점이 좋았어요" 참여 인원 (비율의 분모로 쓴다)
   industry: Industry;
+  // 수집하지 못한 목록·글 항목. 빈 목록([])이나 빈 글은 "없음"과 구분이 안 되어 따로 적는다.
+  // 여기 있는 항목은 화면과 챗봇에서 "없음"이 아니라 "확인 전"으로 다룬다. (lib/checked.ts)
+  unchecked?: UncheckedField[];
 };
+
+export type UncheckedField = "intro" | "amenities" | "coupons" | "representativeKeywords" | "tabs" | "instagramUrl" | "blogUrl";
 
 // ratio = count / keywordParticipants ("이런 점이 좋았어요" 참여 인원. 원 숫자 비교 금지, 항상 비율로 비교)
 export type KeywordStat = { keyword: string; count: number; ratio: number };

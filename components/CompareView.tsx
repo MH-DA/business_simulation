@@ -18,6 +18,8 @@ const TONE = {
   other: { head: "bg-info text-info-foreground", star: "text-star", chip: "bg-info text-info-foreground", label: "경쟁사" },
 } as const;
 
+const snsState = (v: boolean | undefined): StatusState => (v === undefined ? "unknown" : v ? "on" : "off");
+
 const count = (n?: number) => (n === undefined ? "확인 전" : `${n.toLocaleString("ko-KR")}개`);
 
 function useInsights(placeId: string): Insights | null | undefined {
@@ -75,7 +77,11 @@ function SideCard({ side, tone, extra }: { side: CompareSide; tone: Tone; extra:
           {store.rating != null ? <p className={`text-[18px] font-bold ${t.star}`}>★ {store.rating.toFixed(1)}</p> : <p className="text-off-text">확인 전</p>}
         </Row>
         <Row label="소개글">
-          {store.intro?.trim() ? <p className="line-clamp-4 break-keep">{store.intro}</p> : <p className="text-off-text">등록된 소개글이 없어요</p>}
+          {store.intro?.trim() ? (
+            <p className="line-clamp-4 break-keep">{store.intro}</p>
+          ) : (
+            <p className="text-off-text">{side.introUnchecked ? "확인 전" : "등록된 소개글이 없어요"}</p>
+          )}
         </Row>
         <Row label="리뷰 수">
           <p>
@@ -118,11 +124,11 @@ function SideCard({ side, tone, extra }: { side: CompareSide; tone: Tone; extra:
             ))}
             <li className="flex items-center justify-between gap-3">
               <span>인스타그램</span>
-              <Pill state={side.sns.instagram ? "on" : "off"} />
+              <Pill state={snsState(side.sns.instagram)} />
             </li>
             <li className="flex items-center justify-between gap-3">
               <span>네이버 블로그</span>
-              <Pill state={side.sns.blog ? "on" : "off"} />
+              <Pill state={snsState(side.sns.blog)} />
             </li>
           </ul>
         </Row>
