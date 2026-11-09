@@ -90,6 +90,7 @@ class StoreConversion(unittest.TestCase):
         self.assertEqual(store["intro"], "동네 카페입니다.")
         self.assertTrue(store["hasBookingTab"])  # 탭 목록에 예약이 있음
         self.assertNotIn("hasNaverPay", store)  # 모르는 값은 확인 전
+        self.assertEqual(store["unchecked"], ["coupons", "representativeKeywords", "instagramUrl", "blogUrl"])
         self.assertNotIn("blogReviewCount", store)  # 없는 값은 확인 전
         self.assertIn("크롤러버전", report["unknown"])
         self.assertEqual(at, "2026-11-07T10:00:00+09:00")
@@ -154,7 +155,7 @@ class ReviewConversion(unittest.TestCase):
     def test_not_latest_first_warns(self):
         report = {"warnings": [], "unknown": [], "blocked": []}
         cp.convert_reviews(list(reversed(ROWS[:2])), ref=REF, report=report)
-        self.assertTrue(any("최신순" in w for w in report["warnings"]))
+        self.assertTrue(any("최신순" in w for w in report["warnings"]))  # 정렬 후 안내
 
     def test_column_map(self):
         rows = [{"Text1": "좋아요", "Field3": "11.1"}]
@@ -271,6 +272,30 @@ class OctoparseFormat(unittest.TestCase):
             with self.assertRaises(cp.ConvertError) as e:
                 cp.read_table(p)
             self.assertIn("xlsx", str(e.exception))
+
+
+class ReviewsOnly(unittest.TestCase):
+    def test_store_from_review_file(self):
+        rows = [dict(OCTOPARSE_ROWS[0], **{"도입_URL": "https://map.naver.com/p/search/x/place/1084691809?timestamp%3D202610142314%26a"})]
+        raw = cp.store_from_review_rows(rows, "카페롱")
+        self.assertEqual(raw["placeId"], "1084691809")
+        self.assertEqual(raw["collectedAt"], "2026-10-14T23:14:00+09:00")
+        place = cp.build_place(raw, rows, industry="카페", source="octoparse")
+        self.assertEqual(cp.validate(place), [])
+        s = place["store"]
+        self.assertEqual((s["rating"], s["visitorReviewCount"]), (4.77, 2090))
+        self.assertNotIn("blogReviewCount", s)  # 비어 있으면 확인 전
+        self.assertIn("intro", s["unchecked"])  # 소개글·쿠폰 등은 "없음"이 아니라 확인 전
+        self.assertIn("coupons", s["unchecked"])
+        with self.assertRaises(cp.ConvertError):  # 이름은 지어내지 않는다
+            cp.store_from_review_rows(rows, None)
+
+    def test_resorts_by_visit_date(self):
+        rows = [{"리뷰내용": "a", "방문시간": "9.18.목"}, {"리뷰내용": "b", "방문시간": "10.10.금"}, {"리뷰내용": "c", "방문시간": "8.17.일"}]
+        report = {"warnings": [], "unknown": [], "blocked": []}
+        reviews = cp.convert_reviews(rows, ref=REF, report=report)
+        self.assertEqual([r["body"] for r in reviews], ["b", "a", "c"])
+        self.assertTrue(any("다시 정렬" in w for w in report["warnings"]))
 
 
 if __name__ == "__main__":
