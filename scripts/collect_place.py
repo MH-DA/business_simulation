@@ -288,8 +288,16 @@ def fetch_pages(page: Any, place_id: str, pause: tuple[float, float]) -> dict[st
         page.goto(url, wait_until="domcontentloaded", timeout=30000)
         page.wait_for_timeout(2500)
         text = page.evaluate("() => document.body ? document.body.innerText : ''")
-        if any(w in text for w in BLOCK_WORDS):
-            raise BlockedError(f"봇 확인 화면이 떴어요 ({url}). 우회하지 않고 멈출게요. 한참 뒤에 다시 시도해 주세요.")
+        hit = next((w for w in BLOCK_WORDS if w in text), None)
+        if hit:
+            # 진짜 봇 확인인지 사람이 확인할 수 있게 그 화면만 남긴다 (우회는 하지 않는다)
+            folder = ROOT / "data" / "raw" / place_id
+            folder.mkdir(parents=True, exist_ok=True)
+            page.screenshot(path=str(folder / "blocked.png"), full_page=True)
+            (folder / "blocked_text.txt").write_text(text[:5000], encoding="utf-8")
+            raise BlockedError(
+                f"봇 확인으로 보이는 화면이 떴어요 ({url}, 발견한 단어: '{hit}'). 우회하지 않고 멈출게요.\n"
+                f"       그 화면을 data\\raw\\{place_id}\\blocked.png 와 blocked_text.txt 로 남겼어요.")
         state = page.evaluate("() => window.__APOLLO_STATE__ || null")
         data: dict[str, Any] = {"url": page.url, "state": state, "text": text}
         if name == "home":
