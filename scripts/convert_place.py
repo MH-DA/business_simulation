@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import io
 import json
 import re
 import sys
@@ -91,14 +92,14 @@ STORE_ALIASES = _aliases({
 # 리뷰 (Octoparse) 열 이름 → Review 필드. 여기 있는 열만 저장한다.
 REVIEW_ALIASES = _aliases({
     "body": ["text", "content", "review", "review_text", "본문", "리뷰", "리뷰내용", "리뷰본문", "내용"],
-    "visitedDate": ["visited_date", "visit_date", "방문일", "방문날짜", "방문일자"],
+    "visitedDate": ["visited_date", "visit_date", "방문일", "방문날짜", "방문일자", "방문시간"],
     "createdDate": ["created_date", "write_date", "작성일", "작성날짜", "작성일자"],
-    "visitCount": ["visit_count", "방문횟수", "방문차수", "방문회차", "n번째방문"],
-    "authType": ["auth_type", "auth", "인증수단", "인증", "인증방법"],
-    "photoCount": ["photo_count", "사진수", "사진개수", "리뷰사진수"],
+    "visitCount": ["visit_count", "방문횟수", "방분횟수", "방문차수", "방문회차", "n번째방문"],
+    "authType": ["auth_type", "auth", "인증수단", "인증", "인증방법", "방문인증"],
+    "photoCount": ["photo_count", "사진수", "사진개수", "리뷰사진수", "첨부이미지", "첨부사진"],
     "ownerReply": ["owner_reply", "reply", "사장님답글", "답글", "사장님댓글", "답글내용"],
     "hasOwnerReply": ["has_owner_reply", "답글여부", "사장님답글여부"],
-    "votedKeywords": ["voted_keywords", "keywords", "선택키워드", "키워드", "이런점이좋았어요"],
+    "votedKeywords": ["voted_keywords", "keywords", "선택키워드", "키워드", "이런점이좋았어요", "이런점이좋아요"],
 })
 
 REVIEW_FIELDS = set(REVIEW_ALIASES.values())
@@ -110,10 +111,17 @@ BLOCKED_REVIEW_COLUMNS = {
         "프로필", "프로필사진", "profile", "avatar",
         "링크", "url", "link", "리뷰링크", "작성자링크", "page_url",
         "팔로워", "팔로워수", "follower", "followers",
-        "작성자리뷰수", "리뷰어리뷰수", "작성자사진수",
+        "작성자리뷰수", "리뷰어리뷰수", "작성자사진수", "리뷰작성자", "리뷰작성자링크", "리뷰작성수",
         "이미지", "이미지url", "사진url", "image", "image_url", "photo_url",
     )
 }
+
+# Octoparse 리뷰 파일에 줄마다 반복되는 가게 단위 열. 리뷰로 저장하지 않고, 가게 번호가 맞는지 확인하는 데만 쓴다.
+REVIEW_FILE_STORE_COLUMNS = {norm_key(k) for k in (
+    "유입_URL", "도입_URL", "입력URL", "URL", "가게이름", "업체명", "카테고리", "업종", "전체평점", "별점",
+    "방문자리뷰", "블로그리뷰", "방문자리뷰수", "블로그리뷰수",
+)}
+URL_COLUMNS = {norm_key(k) for k in ("유입_URL", "도입_URL", "입력URL", "URL")}
 
 PHONE_RE = re.compile(r"01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}")
 INTRO_NOISE_RE = re.compile(r"\s*(펼쳐보기|접기|더보기|내용 더보기)\s*$")
@@ -457,9 +465,11 @@ def read_table(path: Path) -> list[dict[str, Any]]:
             except UnicodeDecodeError:
                 continue
         else:
-            raise ConvertError(f"{path.name} 의 글자 인코딩을 읽지 못했어요. 엑셀(.xlsx)로 내보내 주세요.")
+            raise ConvertError(
+                f"{path.name} 의 한글이 깨진 채로 저장돼 있어 읽을 수 없어요. CSV를 엑셀이나 메모장으로 열었다가 "
+                "저장하면 이렇게 될 수 있어요. Octoparse 에서 엑셀(.xlsx)로 다시 내보내 주세요.")
         delim = "\t" if suffix == ".tsv" else ","
-        rows = list(csv.reader(text.splitlines(), delimiter=delim))
+        rows = list(csv.reader(io.StringIO(text, newline=""), delimiter=delim))  # 리뷰 안 줄바꿈 유지
     else:
         raise ConvertError(f"리뷰 파일은 .xlsx 또는 .csv 여야 해요: {path.name}")
     if not rows:
@@ -469,7 +479,7 @@ def read_table(path: Path) -> list[dict[str, Any]]:
 
 
 def convert_reviews(rows: list[dict[str, Any]], *, ref: dt.date, extra_map: dict[str, str] | None = None,
-                    report: dict[str, list[str]] | None = None) -> list[dict[str, Any]]:
+                    report: dict[str, list[str]] | None = None, place_id: str | None = None) -> list[dict[str, Any]]:
     report = report if report is not None else {"warnings": [], "unknown": [], "blocked": []}
     report.setdefault("blocked", [])
     if not rows:
@@ -487,8 +497,20 @@ def convert_reviews(rows: list[dict[str, Any]], *, ref: dt.date, extra_map: dict
         elif k in aliases and aliases[k] in REVIEW_FIELDS:
             if aliases[k] not in columns.values():
                 columns[col] = aliases[k]
-        elif col:
+        elif k in REVIEW_FILE_STORE_COLUMNS or not k:
+            continue  # 줄마다 반복되는 가게 정보 또는 빈 열
+        else:
             report["unknown"].append(col)
+
+    # 다른 가게의 리뷰 파일을 잘못 넣지 않았는지 확인
+    if place_id:
+        url_col = next((c for c in rows[0].keys() if norm_key(c) in URL_COLUMNS), None)
+        found = {place_id_from_url(str(r.get(url_col) or "")) for r in rows[:20]} - {None} if url_col else set()
+        if found and place_id not in found:
+            raise ConvertError(
+                f"리뷰 파일의 가게 번호({', '.join(sorted(found))})가 가게 정보({place_id})와 달라요. "
+                "다른 가게의 리뷰 파일을 넣은 것 같아요."
+            )
 
     if "body" not in columns.values():
         raise ConvertError(
@@ -530,6 +552,19 @@ def convert_reviews(rows: list[dict[str, Any]], *, ref: dt.date, extra_map: dict
         r["body"] = mask_phone(body)
         r["source"] = "octoparse"
         reviews.append(r)
+
+    # Octoparse 가 페이지를 넘기며 같은 리뷰를 두 번 담는 경우가 있어 한 번만 남긴다
+    seen: set[tuple[Any, ...]] = set()
+    unique = []
+    for r in reviews:
+        key = (r["body"], r.get("visitedDate"), r.get("visitCount"))
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(r)
+    if len(unique) < len(reviews):
+        report["warnings"].append(f"같은 리뷰가 두 번 들어 있어 {len(reviews) - len(unique)}개를 뺐어요.")
+    reviews = unique
 
     dates = [r.get("visitedDate") or r.get("createdDate") for r in reviews]
     dates = [d for d in dates if d]
@@ -609,7 +644,8 @@ def build_place(store_raw: dict[str, Any], review_rows: list[dict[str, Any]] | N
     at = collected_at or found_at or dt.datetime.now(KST).isoformat(timespec="seconds")
     if review_rows is not None:
         rep = {"warnings": report["warnings"], "unknown": report["review_unknown"], "blocked": report["blocked"]}
-        reviews = convert_reviews(review_rows, ref=_ref_date(at), extra_map=review_map, report=rep)
+        reviews = convert_reviews(review_rows, ref=_ref_date(at), extra_map=review_map, report=rep,
+                                  place_id=store.get("placeId"))
     else:
         reviews = old_reviews
 

@@ -227,5 +227,51 @@ class Files(unittest.TestCase):
             self.assertEqual(cp.validate(place), [], f.name)
 
 
+OCTOPARSE_ROWS = [
+    {"도입_URL": "https://map.naver.com/p/search/x/place/1084691809?c=15", "가게이름": None, "전체평점": "4.77",
+     "방문자리뷰": "2,090", "리뷰작성자": "jia****", "리뷰작성자링크": "https://m.place.naver.com/my/abc/review",
+     "리뷰작성수": "124", "팔로워": "71", "첨부이미지": None, "리뷰내용": "커피가 맛있어요\n또 올게요",
+     "이런_점이_좋아요": None, "방문시간": "10.5.월", "방분횟수": "5번째 방문", "방문인증": "인증 수단\n영수증"},
+]
+
+
+class OctoparseFormat(unittest.TestCase):
+    def test_team_octoparse_columns(self):
+        rows = OCTOPARSE_ROWS + [dict(OCTOPARSE_ROWS[0])]  # 같은 리뷰가 두 번 들어간 경우
+        report = {"warnings": [], "unknown": [], "blocked": []}
+        reviews = cp.convert_reviews(rows, ref=REF, report=report, place_id="1084691809")
+        self.assertEqual(len(reviews), 1)
+        r = reviews[0]
+        self.assertEqual(r["body"], "커피가 맛있어요\n또 올게요")
+        self.assertEqual(r["visitedDate"], "2026-10-05")
+        self.assertEqual(r["visitCount"], 5)
+        self.assertEqual(r["authType"], "영수증")
+        self.assertNotIn("hasOwnerReply", r)  # 답글 열이 없으면 확인 전
+        self.assertEqual(sorted(report["blocked"]), ["리뷰작성수", "리뷰작성자", "리뷰작성자링크", "팔로워"])
+        self.assertEqual(report["unknown"], [])  # 가게 단위 열은 조용히 넘긴다
+        self.assertTrue(any("두 번" in w for w in report["warnings"]))
+        self.assertNotIn("jia****", json.dumps(reviews, ensure_ascii=False))
+
+    def test_wrong_store_file_is_error(self):
+        with self.assertRaises(cp.ConvertError):
+            cp.convert_reviews(OCTOPARSE_ROWS, ref=REF, place_id="9999999")
+
+    def test_csv_keeps_newlines_in_review(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "r.csv"
+            p.write_text('리뷰내용,방문시간\n"첫 줄\n둘째 줄",10.5.월\n', encoding="utf-8")
+            rows = cp.read_table(p)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["리뷰내용"], "첫 줄\n둘째 줄")
+
+    def test_broken_csv_message(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "broken.csv"
+            p.write_bytes(b"?\x84\xec\x9e\x85_URL,\xea\xb0\x80?\x8c\n")
+            with self.assertRaises(cp.ConvertError) as e:
+                cp.read_table(p)
+            self.assertIn("xlsx", str(e.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
