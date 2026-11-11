@@ -72,6 +72,24 @@ BA AI 경영 시뮬레이션 팀 프로젝트. 사장님이 네이버 플레이�
 - Octoparse로 수집한 리뷰는 CSV(UTF-8)로 내보내 저장소에 올린다. 작성자 닉네임, 프로필, 사진 파일은 저장하지 않는다.
 - 저장된 업체는 `DemoProvider`가, 그 밖의 링크는 `CrawlerProvider`(리뷰 없이 수집)가, 둘 다 실패하면 `MockProvider`가 맡는다.
 
+## DB (Supabase PostgreSQL)
+
+표 6개: `users`(회원), `places`(가게), `user_places`(회원↔가게), `snapshots`(수집 결과 한 장 = 한 줄, `payload`에 CollectedPlace 전체), `jobs`(분석 작업), `owner_answers`(사장님 답변). 정의는 `db/schema.sql`.
+
+1. Supabase 대시보드 → SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run. 여러 번 실행해도 안전하다. 끝에 있는 확인 쿼리로 6개 표 모두 `rls_enabled = true`인지 본다.
+2. `.env.local`에 `DATABASE_URL`(Connect → Session pooler 주소, 비밀번호 포함)을 넣는다. 이 파일은 커밋하지 않는다.
+3. 변환기가 만든 `data/places/<가게번호>.json`을 DB에 올린다. `--dry-run`은 DB에 접속하지 않고 확인만 한다.
+   ```bash
+   node scripts/upload-snapshots.ts --dry-run data/places/1234567.json
+   node --env-file=.env.local scripts/upload-snapshots.ts data/places/1234567.json   # --all 이면 data/places의 실제 수집 파일 전부
+   ```
+4. `.env.local`에 `USE_MOCK_DATA=false`로 두고 `npm run dev`를 켜면 화면이 DB의 스냅샷을 읽는다. DB에 없는 가게는 "수집 필요"로 나오고, DB에 접속하지 못하면 가짜 데이터로 대신하지 않고 오류로 드러낸다.
+
+- RLS를 켜고 정책을 만들지 않았다. 브라우저에서 Supabase Data API로는 어떤 행도 읽거나 쓸 수 없고, 서버(`DATABASE_URL`)만 접근한다.
+- 회원 비밀번호는 평문으로 저장하지 않고 scrypt 해시만 저장한다(`lib/users.ts`). 로그인 화면·세션은 아직 연결하지 않았다.
+- 같은 가게를 같은 수집 시각으로 다시 올리면 그 줄을 덮어쓴다. 수집 시각이 다르면 시점별 스냅샷으로 쌓인다.
+- `lib/places.ts`와 `lib/db/*`, `lib/users.ts`, `db/`는 담당자(B)만 수정한다.
+
 ## 폴더
 
 ```
@@ -82,8 +100,12 @@ lib/
   metrics/    경쟁사 비교 (점수화 없음, 4단계)
   knowledge/  지식 조각 검색 (신호 묶음 가중치, 5단계)
   llm/        질문 분류, 프롬프트, Claude 호출, 근거 검증 (5단계)
+  db/         DB 연결, 스냅샷 읽기·쓰기, 비밀번호 해시 (6단계)
+  users.ts    회원가입·로그인 검사와 users 표 연결
+db/           schema.sql (표 6개, RLS)
+scripts/      변환기(convert_place.py), 업로드(upload-snapshots.ts)
 data/
-  places/     매장별 수집 결과 JSON (현재는 가짜 샘플)
+  places/     변환기가 만든 수집 결과 JSON (DB에 올리기 전 파일, 샘플은 가짜)
   knowledge/  RAG가 읽는 지식 조각 (principles.json, guardrails.json)
 types/        공통 데이터 타입
 docs/
@@ -99,7 +121,7 @@ cp .env.example .env.local   # 필요한 키만 채운다 (Mock 개발은 비워
 npm run dev                  # http://localhost:3000
 npm run typecheck            # 타입 검사 (라우트 타입을 먼저 생성한다)
 npm run lint
-node --test lib/place-url.test.ts lib/metrics/metrics.test.ts lib/llm/llm.test.ts   # 단위 테스트
+node --test lib/place-url.test.ts lib/metrics/metrics.test.ts lib/llm/llm.test.ts lib/db/db.test.ts   # 단위 테스트
 npm run build
 ```
 
