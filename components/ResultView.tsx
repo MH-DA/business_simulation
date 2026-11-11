@@ -13,13 +13,15 @@ const SLIDES = ["현황", "리뷰", "마케팅 자산·제안"] as const;
 
 const fmt = (n?: number) => (n === undefined ? "-" : n.toLocaleString("ko-KR"));
 
-export function ResultView({ view }: { view: ResultViewModel }) {
+// locked = 비로그인 블러 뒤에 깔리는 화면. 이때는 AI 요약(/api/insights)을 부르지 않는다.
+export function ResultView({ view, locked = false }: { view: ResultViewModel; locked?: boolean }) {
   const [slide, setSlide] = useState(0);
   const [insights, setInsights] = useState<Insights | null>(null);
   const introRef = useRef<HTMLDialogElement>(null);
   const { store } = view;
 
   useEffect(() => {
+    if (locked) return;
     let alive = true;
     fetch(`/api/insights/${encodeURIComponent(store.placeId)}`)
       .then((r) => (r.ok ? (r.json() as Promise<Insights>) : null))
@@ -28,7 +30,7 @@ export function ResultView({ view }: { view: ResultViewModel }) {
     return () => {
       alive = false;
     };
-  }, [store.placeId]);
+  }, [store.placeId, locked]);
 
   return (
     <>

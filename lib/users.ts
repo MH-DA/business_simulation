@@ -1,8 +1,10 @@
 import { getSql } from "./db/index.ts";
 import { hashPassword, verifyPassword } from "./db/password.ts";
+import { isMemoryMode, memory } from "./memory-store.ts";
 
 // users 표 연결 (회원가입·로그인 화면: Figma 01·02 = 아이디, 비밀번호, 비밀번호 확인, 사용자 이름)
 // 비밀번호 해시는 이 파일 밖으로 나가지 않는다. 화면과 API에는 PublicUser만 넘긴다.
+// DATABASE_URL 이 없으면(개발 중) DB 대신 서버 메모리에 잠깐 보관한다. (lib/memory-store.ts)
 export type PublicUser = { id: string; loginId: string; displayName: string };
 
 type UserRow = { id: string; login_id: string; display_name: string; password_hash: string };
@@ -32,8 +34,16 @@ export type CreateUserResult =
 export async function createUser(input: SignupInput): Promise<CreateUserResult> {
   const message = validateSignup(input);
   if (message) return { ok: false, reason: "invalid", message };
-  const sql = getSql();
   const passwordHash = await hashPassword(input.password);
+  if (isMemoryMode()) {
+    if (memory.users.some((u) => u.login_id.toLowerCase() === input.loginId.toLowerCase())) {
+      return { ok: false, reason: "taken", message: "이미 사용 중인 아이디예요." };
+    }
+    const row = { id: crypto.randomUUID(), login_id: input.loginId, password_hash: passwordHash, display_name: input.displayName.trim() };
+    memory.users.push(row);
+    return { ok: true, user: toPublic(row) };
+  }
+  const sql = getSql();
   try {
     const rows = await sql<UserRow[]>`
       insert into users (login_id, password_hash, display_name)
@@ -52,16 +62,26 @@ export async function createUser(input: SignupInput): Promise<CreateUserResult> 
 // 아이디와 비밀번호가 맞으면 회원 정보, 아니면 null. 어느 쪽이 틀렸는지는 알려 주지 않는다.
 export async function verifyLogin(loginId: string, password: string): Promise<PublicUser | null> {
   if (!LOGIN_ID_RULE.test(loginId) || password.length > PASSWORD_MAX) return null;
-  const sql = getSql();
-  const rows = await sql<UserRow[]>`
-    select id, login_id, display_name, password_hash from users where lower(login_id) = lower(${loginId})`;
-  const row = rows[0];
+  let row: UserRow | undefined;
+  if (isMemoryMode()) {
+    row = memory.users.find((u) => u.login_id.toLowerCase() === loginId.toLowerCase());
+  } else {
+    const sql = getSql();
+    const rows = await sql<UserRow[]>`
+      select id, login_id, display_name, password_hash from users where lower(login_id) = lower(${loginId})`;
+    row = rows[0];
+  }
   // 없는 아이디여도 해시 계산을 한 번 해서, 응답 시간으로 아이디 존재 여부를 알아내지 못하게 한다.
   const ok = await verifyPassword(password, row?.password_hash ?? DUMMY_HASH);
   return row && ok ? toPublic(row) : null;
 }
 
 export async function getUser(id: string): Promise<PublicUser | null> {
+  if (isMemoryMode()) {
+    const row = memory.users.find((u) => u.id === id);
+    return row ? toPublic(row) : null;
+  }
+  if (!UUID.test(id)) return null;
   const sql = getSql();
   const rows = await sql<UserRow[]>`select id, login_id, display_name, password_hash from users where id = ${id}`;
   return rows[0] ? toPublic(rows[0]) : null;
@@ -80,4 +100,6 @@ export async function listPlaceIds(userId: string): Promise<string[]> {
 }
 
 // 형식만 맞는 가짜 해시. 어떤 비밀번호와도 일치하지 않는다.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const DUMMY_HASH = `scrypt$16384$${Buffer.alloc(16).toString("base64")}$${Buffer.alloc(64).toString("base64")}`;

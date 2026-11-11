@@ -74,9 +74,9 @@ BA AI 경영 시뮬레이션 팀 프로젝트. 사장님이 네이버 플레이�
 
 ## DB (Supabase PostgreSQL)
 
-표 6개: `users`(회원), `places`(가게), `user_places`(회원↔가게), `snapshots`(수집 결과 한 장 = 한 줄, `payload`에 CollectedPlace 전체), `jobs`(분석 작업), `owner_answers`(사장님 답변). 정의는 `db/schema.sql`.
+표 8개: `users`(회원), `places`(가게), `user_places`(회원↔가게), `snapshots`(수집 결과 한 장 = 한 줄, `payload`에 CollectedPlace 전체), `jobs`(분석 작업), `owner_answers`(사장님 답변), `conversations`(상담 대화), `chat_messages`(대화 안의 질문·답변). 정의는 `db/schema.sql`.
 
-1. Supabase 대시보드 → SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run. 여러 번 실행해도 안전하다. 끝에 있는 확인 쿼리로 6개 표 모두 `rls_enabled = true`인지 본다.
+1. Supabase 대시보드 → SQL Editor에 `db/schema.sql` 전체를 붙여 넣고 Run. 여러 번 실행해도 안전하다. 끝에 있는 확인 쿼리로 8개 표 모두 `rls_enabled = true`인지 본다.
 2. `.env.local`에 `DATABASE_URL`(Connect → Session pooler 주소, 비밀번호 포함)을 넣는다. 이 파일은 커밋하지 않는다.
 3. 변환기가 만든 `data/places/<가게번호>.json`을 DB에 올린다. `--dry-run`은 DB에 접속하지 않고 확인만 한다.
    ```bash
@@ -86,14 +86,22 @@ BA AI 경영 시뮬레이션 팀 프로젝트. 사장님이 네이버 플레이�
 4. `.env.local`에 `USE_MOCK_DATA=false`로 두고 `npm run dev`를 켜면 화면이 DB의 스냅샷을 읽는다. DB에 없는 가게는 "수집 필요"로 나오고, DB에 접속하지 못하면 가짜 데이터로 대신하지 않고 오류로 드러낸다.
 
 - RLS를 켜고 정책을 만들지 않았다. 브라우저에서 Supabase Data API로는 어떤 행도 읽거나 쓸 수 없고, 서버(`DATABASE_URL`)만 접근한다.
-- 회원 비밀번호는 평문으로 저장하지 않고 scrypt 해시만 저장한다(`lib/users.ts`). 로그인 화면·세션은 아직 연결하지 않았다.
+- 회원 비밀번호는 평문으로 저장하지 않고 scrypt 해시만 저장한다(`lib/users.ts`).
 - 같은 가게를 같은 수집 시각으로 다시 올리면 그 줄을 덮어쓴다. 수집 시각이 다르면 시점별 스냅샷으로 쌓인다.
 - `lib/places.ts`와 `lib/db/*`, `lib/users.ts`, `db/`는 담당자(B)만 수정한다.
+
+## 회원가입·로그인, 상담 기록
+
+- 아이디·비밀번호 방식이다(`/signup`, `/login`). 비밀번호 찾기는 아직 없다.
+- 로그인 유지는 서명한 쿠키(`placement_session`, 14일, httpOnly)로 한다(`lib/session-token.ts`, `lib/session.ts`). 배포 환경에는 `SESSION_SECRET`(32자 이상 임의 문자열)이 꼭 있어야 한다.
+- 비로그인이면 분석 결과는 흐리게 보이고(Figma 01 블러), 경쟁 가게 비교·상담 화면은 로그인 화면으로 보낸다. `/api/chat`, `/api/insights`도 로그인해야 쓸 수 있다(LLM 비용).
+- 상담 질문과 답변은 `conversations`·`chat_messages` 표에 저장되고, 상담 화면 왼쪽 "이전 대화"에 이 가게의 대화가 최근 순으로 나온다(`lib/chats.ts`). 대화 제목은 첫 질문 앞부분이다.
+- `DATABASE_URL`이 없으면(개발 중) 회원과 대화를 서버 메모리에 잠깐 보관한다. 서버를 다시 켜면 사라진다. 배포 환경에서는 DB가 없으면 오류를 낸다.
 
 ## 폴더
 
 ```
-app/          화면(/ , /guide, /analyzing/[jobId], /result/[placeId])과 API route
+app/          화면(/ , /guide, /analyzing/[jobId], /result/[placeId], /login, /signup ...)과 API route
 components/   StoreCard, KeywordChip, InsightCard, EvidenceCard, ConfirmCard, ChatPanel ...
 lib/
   providers/  데이터 공급자 (PlaceDataProvider 인터페이스, MockProvider)
@@ -102,7 +110,9 @@ lib/
   llm/        질문 분류, 프롬프트, Claude 호출, 근거 검증 (5단계)
   db/         DB 연결, 스냅샷 읽기·쓰기, 비밀번호 해시 (6단계)
   users.ts    회원가입·로그인 검사와 users 표 연결
-db/           schema.sql (표 6개, RLS)
+  session*.ts 로그인 유지 쿠키 (서명·확인, 현재 회원)
+  chats.ts    상담 기록 (conversations, chat_messages)
+db/           schema.sql (표 8개, RLS)
 scripts/      변환기(convert_place.py), 업로드(upload-snapshots.ts)
 data/
   places/     변환기가 만든 수집 결과 JSON (DB에 올리기 전 파일, 샘플은 가짜)
