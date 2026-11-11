@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
   const resolved = await resolveCompetitor(parsed.placeId);
   if (resolved.status === "needs_collection") {
-    createJob(parsed.placeId, "needs_collection");
+    await createJob(parsed.placeId, "needs_collection");
     return NextResponse.json({ status: "needs_collection", competitorId: parsed.placeId }, { status: 404 });
   }
   return NextResponse.json({ status: "ok", competitorId: parsed.placeId });

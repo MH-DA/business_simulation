@@ -88,7 +88,8 @@ BA AI 경영 시뮬레이션 팀 프로젝트. 사장님이 네이버 플레이�
 - RLS를 켜고 정책을 만들지 않았다. 브라우저에서 Supabase Data API로는 어떤 행도 읽거나 쓸 수 없고, 서버(`DATABASE_URL`)만 접근한다.
 - 회원 비밀번호는 평문으로 저장하지 않고 scrypt 해시만 저장한다(`lib/users.ts`). 로그인 화면·세션은 아직 연결하지 않았다.
 - 같은 가게를 같은 수집 시각으로 다시 올리면 그 줄을 덮어쓴다. 수집 시각이 다르면 시점별 스냅샷으로 쌓인다.
-- `lib/places.ts`와 `lib/db/*`, `lib/users.ts`, `db/`는 담당자(B)만 수정한다.
+- 분석 작업 상태(`lib/jobs.ts`)는 `USE_MOCK_DATA=false`일 때 `jobs` 표에 저장하고, Mock 모드에서는 서버 메모리를 쓴다. 배포 환경에서 서버가 여러 대여도 같은 상태를 보게 하기 위해서다.
+- `lib/places.ts`와 `lib/jobs.ts`, `lib/db/*`, `lib/users.ts`, `db/`는 담당자(B)만 수정한다.
 
 ## 폴더
 

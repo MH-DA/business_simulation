@@ -10,6 +10,6 @@ export async function POST(req: Request) {
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
 
   const status = (await canAnalyze(parsed.placeId)) ? "done" : "needs_collection";
-  const job = createJob(parsed.placeId, status);
+  const job = await createJob(parsed.placeId, status);
   return NextResponse.json({ jobId: job.jobId, placeId: job.placeId, status: job.status });
 }
