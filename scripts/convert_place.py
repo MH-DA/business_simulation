@@ -40,7 +40,7 @@ UNCHECKABLE_FIELDS = ("intro", "amenities", "coupons", "representativeKeywords",
 OPTIONAL_STORE_FIELDS = (
     "address", "photoUrl", "rating", "visitorReviewCount", "blogReviewCount", "hasBookingTab",
     "intro", "hasNaverPay", "lastNewsDate", "closedDays", "openHours", "ownerPhotoCount",
-    "hasPlacePlus", "instagramUrl", "blogUrl", "keywordParticipants",
+    "hasPlacePlus", "instagramUrl", "blogUrl", "keywordParticipants", "hasCoupon",
 )
 
 
@@ -77,6 +77,7 @@ STORE_ALIASES = _aliases({
     "intro": ["introduction", "description", "소개", "소개글", "가게소개"],
     "representativeKeywords": ["representative_keywords", "keywords", "대표키워드"],
     "coupons": ["coupon", "쿠폰"],
+    "hasCoupon": ["has_coupon", "쿠폰유무", "쿠폰여부"],
     "hasNaverPay": ["naver_pay", "naverpay", "네이버페이"],
     "lastNewsDate": ["last_news_date", "news_date", "최근새소식", "최근새소식날짜", "새소식날짜"],
     "closedDays": ["closed_days", "holiday", "휴무일", "정기휴무"],
@@ -386,7 +387,7 @@ def convert_store(raw: dict[str, Any], *, industry: str | None = None, place_id:
     if booking is not None:
         store["hasBookingTab"] = booking
 
-    for key in ("hasNaverPay", "hasPlacePlus"):
+    for key in ("hasNaverPay", "hasPlacePlus", "hasCoupon"):
         b = to_bool(vals.get(key))
         if b is not None:
             store[key] = b
@@ -609,7 +610,7 @@ def validate(place: dict[str, Any]) -> list[str]:
             errs.append(f"store.{key} 가 정수가 아니에요")
     if "unchecked" in s and not (isinstance(s["unchecked"], list) and set(s["unchecked"]) <= set(UNCHECKABLE_FIELDS)):
         errs.append("store.unchecked 형식이 달라요")
-    for key in ("hasBookingTab", "hasNaverPay", "hasPlacePlus"):
+    for key in ("hasBookingTab", "hasNaverPay", "hasPlacePlus", "hasCoupon"):
         if key in s and not isinstance(s[key], bool):
             errs.append(f"store.{key} 가 참/거짓이 아니에요")
     for k in place.get("keywordStats", []):

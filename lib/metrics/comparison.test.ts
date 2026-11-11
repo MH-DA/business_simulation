@@ -43,3 +43,10 @@ test("수집하지 못한 항목은 '없음'이 아니라 '수집 전'으로 비
   assert.ok(!c.signalTags.includes("intro_weak"));
   assert.deepEqual(buildDifferences(mine, other).other, []); // 수집 전 항목은 차이로 세지 않는다
 });
+
+test("쿠폰: 수집기가 확인한 쿠폰 유무(hasCoupon)를 쿠폰 목록보다 먼저 쓴다", () => {
+  const mine: Store = { ...base, hasCoupon: true };
+  const other: Store = { ...base, placeId: "b", hasCoupon: false, coupons: [] };
+  const d = buildDifferences(mine, other);
+  assert.deepEqual(d.mine.map((x) => x.item), ["쿠폰"]);
+});

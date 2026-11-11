@@ -1,5 +1,5 @@
 r"""
-네이버 플레이스 정보 수집기 v7 — PLACEMENT 기본 정보 수집용
+네이버 플레이스 정보 수집기 v7.1 — PLACEMENT 기본 정보 수집용
 
 [VS Code 준비] (최초 1회, 저장소 폴더에서)
   pip install playwright openpyxl
@@ -26,6 +26,10 @@ r"""
 
 [다음 단계] 웹에서 쓰려면 변환기로 CollectedPlace 형식으로 바꿈
   python scripts\convert_place.py --store data\raw\place_results\<그룹명>\<place_id>\result.json
+
+[v7.1 변경]
+  - "이런 점이 좋았어요" 참여 인원 수집 (키워드 비율의 분모)
+  - 쿠폰은 내용 대신 유무만 확인 (쿠폰 유무: 있음 / 없음 / 확인 전)
 
 [v7 변경]
   - 추가 항목: 주소, 영업시간, 휴무일, 대표 키워드, 네이버페이, 최근 새소식 날짜, 인스타그램·블로그 링크
@@ -99,7 +103,7 @@ STOP_HEADINGS = {"소개", "편의시설 및 서비스", "편의", "찾아오는
 REPORT_ITEMS = ["업체명", "업종", "주소", "영업시간", "휴무일", "별점", "방문자 리뷰 수", "블로그 리뷰 수",
                 "수집 리뷰 수", "영수증 인증(수집분)", "대표 키워드", "예약 탭", "네이버페이",
                 "플레이스 플러스 흔적", "최근 새소식 날짜", "인스타그램", "블로그",
-                "선택 키워드 통계", "업체 사진 수", "소개글", "편의시설 및 서비스", "쿠폰"]
+                "선택 키워드 통계", "참여 인원", "업체 사진 수", "소개글", "편의시설 및 서비스", "쿠폰 유무"]
 
 
 # ================================================================ 헬퍼
@@ -655,6 +659,29 @@ def extract(place_id, static, browser):
         return sorted(out, key=lambda x: -(x["count"] or 0))
     r["선택 키워드 통계"] = guard(_keywords, [])
 
+    def _participants():
+        """'이런 점이 좋았어요' 참여 인원. 키워드별 선택 인원보다 작으면 잘못 잡은 것으로 보고 비워 둠"""
+        top = max([k["count"] or 0 for k in r["선택 키워드 통계"]] or [0])
+        cands = []
+        for d in iter_dicts(apollo):   # 키워드 목록(details)을 가진 묶음에서 '사람 수' 키를 찾음
+            det = d.get("details")
+            if isinstance(det, list) and any(isinstance(x, dict) and "displayName" in x for x in det):
+                r["_키워드묶음_키목록"] = sorted(k for k in d.keys() if k != "details")
+                for key in ("userCount", "participantCount", "usersCount", "totalUserCount", "voterCount"):
+                    if to_int(d.get(key)):
+                        cands.append(to_int(d.get(key)))
+        for pat in (r"([\d,]+)\s*명\s*참여", r"참여(?:자|인원)?\s*([\d,]+)\s*명", r"참여자\s*([\d,]+)"):
+            v = to_int(find_first(review_text, pat))
+            if v:
+                cands.append(v)
+        for v in cands:
+            if v >= top:
+                return v
+        if cands:
+            print(f"  - 참여 인원 후보({cands[0]})가 키워드 선택 인원({top})보다 작아서 '확인 전'으로 뒀어요.")
+        return None
+    r["참여 인원"] = guard(_participants)
+
     r["업체 사진 수"] = guard(lambda: to_int(find_first(photo_text, r"업체\s*(?:사진)?\s*([\d,]+)")))
     r["_사진탭_로드된_img수"] = (browser or {}).get("photo_img_count")
 
@@ -688,7 +715,17 @@ def extract(place_id, static, browser):
                 if t:
                     lines.append(str(t))
         return list(dict.fromkeys(lines))[:10]
-    r["쿠폰"] = guard(_coupon, [])
+    coupon_lines = guard(_coupon, []) or []
+
+    def _has_coupon():
+        """쿠폰은 유무만: 쿠폰 탭·쿠폰 섹션·내부 쿠폰 데이터 중 하나라도 있으면 있음.
+        탭 목록을 읽었는데 셋 다 없으면 없음, 탭 목록을 못 읽었으면 확인 전"""
+        if any("쿠폰" in t for t in tabs) or coupon_lines or "쿠폰 받기" in home_text:
+            return True
+        if tabs:
+            return False
+        return None
+    r["쿠폰 유무"] = guard(_has_coupon)
 
     # ---------------- (v7) 추가 항목
     def _address():
@@ -957,7 +994,7 @@ def build_excel():
                "블로그 리뷰 수", "수집 리뷰 수", "영수증 인증(수집분)", "사진 리뷰 비율(%)", "답글률(%)",
                "재방문 비율(%)", "대표 키워드", "예약 탭", "네이버페이", "플레이스 플러스 흔적(참고)",
                "최근 새소식 날짜", "최근 새소식 표시", "인스타그램", "블로그", "업체 사진 수",
-               "사진탭 로드 img수(참고)", "선택 키워드 상위5", "소개글", "편의시설 및 서비스", "쿠폰",
+               "사진탭 로드 img수(참고)", "선택 키워드 상위5", "참여 인원", "소개글", "편의시설 및 서비스", "쿠폰 유무",
                "탭 목록", "수집 방식", "수집 시각", "입력 URL"]
 
     def pp(v):
@@ -977,12 +1014,12 @@ def build_excel():
                      pp(r.get("플레이스 플러스 흔적")), cell(r.get("최근 새소식 날짜")),
                      cell(r.get("최근 새소식 표시")), lst(r.get("인스타그램")), lst(r.get("블로그")),
                      cell(r.get("업체 사진 수")), r.get("_사진탭_로드된_img수"),
-                     lst((r.get("선택 키워드 통계") or [])[:5]), cell(r.get("소개글")),
-                     lst(r.get("편의시설 및 서비스")), lst(r.get("쿠폰")), lst(r.get("탭 목록")),
+                     lst((r.get("선택 키워드 통계") or [])[:5]), cell(r.get("참여 인원")), cell(r.get("소개글")),
+                     lst(r.get("편의시설 및 서비스")), cell(r.get("쿠폰 유무")), lst(r.get("탭 목록")),
                      r.get("수집 방식"), r.get("collected_at"), r.get("input_url")])
     write_sheet(ws, headers, rows,
                 [22, 13, 14, 35, 40, 25, 7, 10, 10, 10, 10, 10, 10, 10, 30, 8, 10, 18,
-                 12, 12, 35, 35, 10, 10, 45, 50, 35, 35, 30, 22, 20, 40])
+                 12, 12, 35, 35, 10, 10, 45, 10, 50, 35, 10, 30, 22, 20, 40])
 
     ws_r = wb.create_sheet("리뷰")
     rv_rows = []
@@ -1095,7 +1132,7 @@ def main():
     EXCEL_NAME = f"naver_place_results_{group}.xlsx"
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     print("=" * 60)
-    print("  네이버 플레이스 수집기 v7")
+    print("  네이버 플레이스 수집기 v7.1")
     print(f"  결과 폴더: {OUT_DIR}")
     print("  URL을 붙여넣으세요. (빈 줄 입력 시 종료)")
     print("  ※ 수집 중에 뜨는 브라우저 창은 닫지 마세요.")
