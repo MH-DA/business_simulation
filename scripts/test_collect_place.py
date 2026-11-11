@@ -109,6 +109,42 @@ class Extract(unittest.TestCase):
         self.assertEqual(place["keywordStats"][0], {"keyword": "커피가 맛있어요", "count": 180, "ratio": 0.6})
 
 
+class MergedFromV7(unittest.TestCase):
+    """v7.1 수집기에서 옮겨 온 기능: 정보 탭, 펼친 영업시간 글자, 쿠폰 유무, 상대 날짜"""
+
+    def test_information_tab_and_text_hours(self):
+        p = pages(**{
+            "home": {"state": {}, "text": "서울 광진구 능동로38길 9 1층\n영업시간\n월(11/10)\n11:00 - 21:00\n20:30 라스트오더\n"
+                                          "화(11/11)\n정기휴무 (매주 화요일)", "tabs": ["홈", "쿠폰", "리뷰"]},
+            "information": {"state": {"P": {"paymentInfo": ["네이버페이", "제로페이"]}},
+                            "text": "대표 키워드\n#카공\n#디저트\n편의시설 및 서비스\n주차",
+                            "links": ["https://www.instagram.com/cafe_info/"]},
+        })
+        raw, _ = col.extract(p, REF)
+        self.assertEqual(raw["address"], "서울 광진구 능동로38길 9 1층")
+        self.assertEqual(raw["openHours"], "월 11:00 - 21:00 / 20:30 라스트오더")
+        self.assertEqual(raw["closedDays"], "화 정기휴무 (매주 화요일)")
+        self.assertEqual(raw["representativeKeywords"], ["카공", "디저트"])
+        self.assertEqual(raw["hasNaverPay"], "있음")
+        self.assertEqual(raw["instagramUrl"], "https://www.instagram.com/cafe_info")
+        self.assertIs(raw["hasCoupon"], True)
+
+    def test_coupon_presence(self):
+        raw, _ = col.extract(pages(), REF)  # 탭 목록을 읽었는데 쿠폰 탭이 없음
+        self.assertIs(raw["hasCoupon"], False)
+        raw, _ = col.extract(pages(home={"state": {}, "text": "", "tabs": []}), REF)  # 탭 목록을 못 읽음
+        self.assertNotIn("hasCoupon", raw)  # 확인 전
+        raw, _ = col.extract(pages(home={"state": {}, "text": "", "tabs": ["홈", "쿠폰"]}), REF)
+        raw.update(placeId="1", name="쿠폰 카페", collectedAt="2026-11-09T19:00:00+09:00", category="카페")
+        place = cp.build_place(raw, None, source="crawler")
+        self.assertEqual(cp.validate(place), [])
+        self.assertTrue(place["store"]["hasCoupon"])
+
+    def test_relative_news_date(self):
+        raw, _ = col.extract(pages(feed={"state": {}, "text": "공지 2026.10.3.\n새 메뉴 3일 전"}), REF)
+        self.assertEqual(raw["lastNewsDate"], "2026-11-06")
+
+
 class Privacy(unittest.TestCase):
     def test_scrub_removes_authors(self):
         cleaned = str(col.scrub({**HOME_STATE, **REVIEW_STATE}))
