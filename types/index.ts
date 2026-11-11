@@ -19,6 +19,7 @@ export type Store = {
   intro?: string;
   representativeKeywords: string[];
   coupons: string[];
+  hasCoupon?: boolean; // 쿠폰 유무 (수집기는 유무만 확인한다. 수집 전이면 비어 있음)
   hasNaverPay?: boolean; // 네이버페이 사용 여부 (수집 전이면 비어 있음)
   lastNewsDate?: string; // 가장 최근 새소식 날짜, ISO 8601 (수집 전이면 비어 있음)
   // ↓ Figma 분석 결과 화면(PLACEMENT)에서 쓰는 항목. 모두 선택: 수집 전이면 비어 있고 화면은 "확인 전"으로 보여준다.

@@ -95,6 +95,12 @@ class StoreConversion(unittest.TestCase):
         self.assertIn("크롤러버전", report["unknown"])
         self.assertEqual(at, "2026-11-07T10:00:00+09:00")
 
+    def test_coupon_presence(self):
+        store, _, _ = cp.convert_store({**COLLECTOR, "쿠폰 유무": True})
+        self.assertTrue(store["hasCoupon"])
+        store, _, _ = cp.convert_store({**COLLECTOR, "쿠폰 유무": None})
+        self.assertNotIn("hasCoupon", store)  # 모르는 값은 확인 전
+
     def test_ratio_uses_participants(self):
         _, stats, _ = cp.convert_store(COLLECTOR)
         self.assertEqual(stats[0], {"keyword": "인테리어가 멋져요", "count": 120, "ratio": 0.6})

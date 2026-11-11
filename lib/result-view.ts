@@ -70,8 +70,8 @@ export function statusItems(store: Store, collectedAt: string): StatusItem[] {
   const coupon: StatusItem =
     hasCoupons(store) === undefined
       ? { label: "쿠폰", state: "unknown", text: "쿠폰 정보를 확인하지 못했어요" }
-      : store.coupons.length > 0
-        ? { label: "쿠폰", state: "on", text: `이용 가능한 쿠폰이 ${store.coupons.length}개 있어요` }
+      : hasCoupons(store)
+        ? { label: "쿠폰", state: "on", text: store.coupons.length > 0 ? `이용 가능한 쿠폰이 ${store.coupons.length}개 있어요` : "이용 가능한 쿠폰이 있어요" }
         : { label: "쿠폰", state: "off", text: "이용 가능한 쿠폰이 없어요" };
 
   return [photo, reserve, news, plus, pay, coupon];
