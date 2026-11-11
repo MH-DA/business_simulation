@@ -198,13 +198,15 @@ function ChatRoom({
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
+  const [activeTurn, setActiveTurn] = useState<number | null>(null);
+  const turnRefs = useRef(new Map<number, HTMLDivElement>());
   const nextId = useRef(1);
   const endRef = useRef<HTMLDivElement>(null);
   const busy = turns.some((t) => t.status === "streaming");
   const stage = stageOf(answers);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    if (turns.length) endRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [turns]);
 
   function patch(id: number, fn: (t: Turn) => Turn) {
@@ -215,6 +217,7 @@ function ChatRoom({
     const question = text.trim();
     if (!question || busy) return;
     const id = nextId.current++;
+    setActiveTurn(id);
     setTurns((all) => [...all, { id, question, answer: "", status: "streaming", evidence: [] }]);
     setDraft("");
     try {
@@ -256,67 +259,92 @@ function ChatRoom({
   }
 
   const greetingBody = topKeywords.length
-    ? `손님들이 '${topKeywords.join("', '")}' 같은 점을 좋게 봤어요. 이 강점을 더 잘 알릴 방법을 함께 찾아볼게요. 요즘 가게 마케팅에서 가장 고민되는 점은 무엇인가요?`
+    ? `손님들이 '${topKeywords.join("', '")}' 같은 점을 좋게 봤어요.\n이 강점을 더 잘 알릴 방법을 함께 찾아볼게요.\n요즘 가게 마케팅에서 가장 고민되는 점은 무엇인가요?`
     : "요즘 가게 마케팅에서 가장 고민되는 점을 편하게 알려주세요.";
 
   return (
-    <main className="mx-auto grid w-full max-w-[1320px] gap-5 px-4 pb-10 sm:px-0 lg:grid-cols-[292px_1fr]">
-      {/* 왼쪽: 상담 중인 가게 */}
-      <aside className="flex flex-col rounded-card bg-secondary px-6 py-8 lg:min-h-[734px]">
+    <main className="mx-auto mt-4 grid w-full max-w-[1320px] gap-5 px-4 pb-10 sm:px-6 lg:grid-cols-[292px_minmax(0,1fr)] xl:px-0">
+      <aside className="flex min-w-0 flex-col rounded-card bg-secondary px-6 py-7 lg:h-[calc(100dvh-166px)] lg:min-h-[620px]">
         <p className="text-[13px] text-muted-foreground">지금 상담 중인 가게</p>
         <div className="mt-5 flex items-start justify-between gap-2">
           <p className="break-keep text-2xl font-bold">{store.name}</p>
           {store.rating != null && <p className="mt-1 shrink-0 font-bold text-star">★ {store.rating.toFixed(1)}</p>}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">{store.category.split(",").join(" · ")}</p>
-        <div className="flex-1" />
-        {stage && (
-          <div className="mt-8 rounded-tile bg-card px-4 py-4">
-            <p className="font-bold text-primary">{stage.name}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{stage.desc}</p>
-            <button type="button" onClick={onRedo} className="mt-2 text-xs text-muted-foreground underline underline-offset-2">
-              답 다시 고르기
+
+        <nav aria-label="현재 대화 질문 목록" className="-mx-6 mt-5 max-h-40 overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
+          {turns.map((turn) => (
+            <button
+              key={turn.id}
+              type="button"
+              aria-current={activeTurn === turn.id ? "true" : undefined}
+              onClick={() => {
+                setActiveTurn(turn.id);
+                turnRefs.current.get(turn.id)?.scrollIntoView({ block: "start", behavior: "smooth" });
+              }}
+              className={`block w-full rounded-xl px-[18px] py-3.5 text-left text-xs leading-relaxed text-muted-foreground transition hover:bg-primary/5 ${activeTurn === turn.id ? "bg-primary/10" : ""}`}
+            >
+              {turn.question}
             </button>
-          </div>
-        )}
-        <Link
-          href={competitorId ? `/compare/${encodeURIComponent(store.placeId)}/${encodeURIComponent(competitorId)}` : `/compare/${encodeURIComponent(store.placeId)}`}
-          className="mt-6 flex h-11 items-center justify-center rounded-xl border border-on-border bg-card text-sm font-bold text-primary"
-        >
-          {competitorId ? "경쟁 가게 비교 다시 보기 ↗" : "경쟁 가게와 비교하기 ↗"}
-        </Link>
+          ))}
+        </nav>
+
+        <div className="mt-6 flex flex-col gap-2">
+          {[
+            { name: "마케팅 시작 단계", desc: "기본부터 차근차근 안내해드려요" },
+            { name: "마케팅 개선 단계", desc: "지금 하는 마케팅을 더 잘하도록 도와드려요" },
+          ].map((item) => (
+            <div key={item.name} className={`rounded-tile border px-4 py-3 ${stage?.name === item.name ? "border-primary bg-on-border" : "border-transparent bg-[#d9d9d9]"}`}>
+              <p className={`text-sm font-bold ${stage?.name === item.name ? "text-primary" : "text-off-text"}`}>{item.name}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.desc}</p>
+            </div>
+          ))}
+          <button type="button" onClick={onRedo} className="self-start text-xs text-muted-foreground underline underline-offset-2">
+            성향 답 다시 고르기
+          </button>
+        </div>
         <Link
           href={`/result/${encodeURIComponent(store.placeId)}`}
-          className="mt-2.5 flex h-11 items-center justify-center rounded-xl border border-[#9cc0ff] bg-[#eaf2ff] text-sm font-bold text-info-foreground"
+          className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-[#9cc0ff] bg-[#dcebff] px-2 text-sm font-bold text-star"
         >
           가게 분석 다시 보기 ↗
+        </Link>
+        <Link
+          href={competitorId ? `/compare/${encodeURIComponent(store.placeId)}/${encodeURIComponent(competitorId)}` : `/compare/${encodeURIComponent(store.placeId)}`}
+          className="mt-1.5 flex min-h-11 items-center justify-center rounded-xl border border-[#9cc0ff] bg-[#dcebff] px-2 text-sm font-bold text-star"
+        >
+          {competitorId ? "경쟁자 분석 다시 보기 ↗" : "경쟁 가게와 비교하기 ↗"}
         </Link>
       </aside>
 
       {/* 오른쪽: 대화 */}
-      <section className="flex flex-col rounded-[32px] bg-card px-5 py-6 sm:px-8 lg:min-h-[734px]">
-        <header className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">우리 가게 마케팅 이야기</h1>
+      <section className="flex min-w-0 flex-col rounded-card bg-card px-5 pb-[22px] pt-4 sm:px-8 lg:h-[calc(100dvh-166px)] lg:min-h-[620px]">
+        <header className="flex items-center justify-between gap-3">
+          <h1 className="min-w-0 break-keep text-lg font-bold sm:text-xl">우리 가게 마케팅 이야기</h1>
           <button
             type="button"
-            onClick={() => setTurns([])}
+            onClick={() => {
+              setTurns([]);
+              setDraft("");
+              setActiveTurn(null);
+            }}
             disabled={busy}
-            className="h-11 rounded-xl bg-secondary px-7 text-sm font-bold text-primary disabled:opacity-50"
+            className="h-11 shrink-0 rounded-xl bg-secondary px-4 text-sm font-bold text-primary disabled:opacity-50 sm:px-7"
           >
             새 대화
           </button>
         </header>
 
-        <div className="mt-8 flex max-h-[520px] flex-1 flex-col gap-5 overflow-y-auto pr-1" aria-live="polite">
+        <div className="mt-10 flex min-h-[340px] flex-1 flex-col gap-3.5 overflow-y-auto pr-1 lg:min-h-0" aria-live="polite">
           <BotBubble>
             <p className="text-[17px] font-bold">사장님, {store.name}의 가게 정보를 살펴봤어요.</p>
-            <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{greetingBody}</p>
+            <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-muted-foreground">{greetingBody}</p>
           </BotBubble>
 
           {turns.length === 0 && (
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex flex-col items-start gap-2.5">
               {QUICK.map((q) => (
-                <button key={q} type="button" onClick={() => void send(q)} className="rounded-xl bg-secondary px-6 py-2.5 text-sm font-bold text-primary hover:brightness-95">
+                <button key={q} type="button" onClick={() => void send(q)} className="min-h-11 w-full max-w-[350px] rounded-xl bg-secondary px-5 py-2.5 text-sm font-bold text-primary hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                   {q}
                 </button>
               ))}
@@ -324,8 +352,11 @@ function ChatRoom({
           )}
 
           {turns.map((t) => (
-            <div key={t.id} className="flex flex-col gap-5">
-              <p className="self-end rounded-xl bg-secondary px-6 py-2.5 text-sm font-bold text-primary">{t.question}</p>
+            <div key={t.id} ref={(node) => {
+              if (node) turnRefs.current.set(t.id, node);
+              else turnRefs.current.delete(t.id);
+            }} className="flex scroll-mt-2 flex-col gap-5">
+              <p className="min-h-11 max-w-full self-end break-words rounded-xl bg-secondary px-6 py-2.5 text-sm font-bold text-primary sm:min-w-[320px] sm:max-w-[80%] sm:text-center">{t.question}</p>
               {t.status === "unavailable" && <BotBubble>{UNAVAILABLE}</BotBubble>}
               {t.status === "error" && !t.answer && <BotBubble>{FAILED}</BotBubble>}
               {t.status === "streaming" && !t.answer && (
@@ -364,7 +395,7 @@ function ChatRoom({
         </div>
 
         <form
-          className="mt-6 flex h-16 items-center gap-3 rounded-tile bg-off-bg pl-5 pr-2.5"
+          className="mt-6 flex min-h-16 shrink-0 items-center gap-3 rounded-tile bg-background pl-5 pr-2.5"
           onSubmit={(e) => {
             e.preventDefault();
             void send(draft);
@@ -386,7 +417,7 @@ function ChatRoom({
             보내기 <ArrowUp className="size-4" aria-hidden />
           </button>
         </form>
-        <p className="mt-2 text-[11px] text-muted-foreground">답변은 가게 상황에 따라 달라질 수 있어요. 중요한 정보는 실행 전에 확인해 주세요.</p>
+        <p className="sr-only">답변은 가게 상황에 따라 달라질 수 있어요. 중요한 정보는 실행 전에 확인해 주세요.</p>
       </section>
     </main>
   );
@@ -394,9 +425,9 @@ function ChatRoom({
 
 function BotBubble({ children }: { children: React.ReactNode }) {
   return (
-    <div className="max-w-[850px]">
+    <div className="w-full max-w-[850px] shrink-0">
       <p className="text-[13px] font-bold text-primary">{SERVICE_NAME}</p>
-      <div className="mt-2 rounded-[20px] bg-off-bg px-5 py-4">{children}</div>
+      <div className="mt-3.5 break-words rounded-[20px] bg-background px-5 py-4">{children}</div>
     </div>
   );
 }
