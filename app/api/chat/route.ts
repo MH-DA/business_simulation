@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
+import { saveExchange, type StoredConfirm, type StoredEvidence } from "@/lib/chats";
 import { loadKnowledge } from "@/lib/knowledge";
 import { runChat, selectGenerate } from "@/lib/llm";
 import { resolveCompetitor, resolvePlace } from "@/lib/places";
 import { profileLines } from "@/lib/profile";
+import { getCurrentUser } from "@/lib/session";
 
 const MAX_QUESTION = 500;
 
-// POST /api/chat  { placeId, question, profile?, competitorId? }
+// POST /api/chat  { placeId, question, profile?, competitorId?, conversationId? }   (로그인 필요)
 //   profile = 성향 파악 답 번호 5개 (lib/profile.ts), competitorId = 사장님이 고른 비교 가게 (수집된 가게만 쓴다)
-// 응답: text/event-stream. 한 줄이 "data: {ChatEvent JSON}" 이고, 마지막은 type "done" (근거 카드, 확인 카드).
+//   conversationId = 이어서 쓸 대화. 없으면 답변이 끝난 뒤 새 대화로 저장한다.
+// 응답: text/event-stream. 한 줄이 "data: {ChatEvent JSON}" 이다.
+//   답변이 저장되면 "done" 바로 앞에 { type: "conversation", conversation } 이 온다 (왼쪽 목록 갱신용).
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => null)) as { placeId?: unknown; question?: unknown; profile?: unknown; competitorId?: unknown } | null;
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ status: "unauthorized", message: "로그인이 필요해요." }, { status: 401 });
+  const body = (await req.json().catch(() => null)) as
+    | { placeId?: unknown; question?: unknown; profile?: unknown; competitorId?: unknown; conversationId?: unknown }
+    | null;
   const placeId = typeof body?.placeId === "string" ? body.placeId : "";
   const question = typeof body?.question === "string" ? body.question.trim() : "";
   if (!placeId || !question) {
@@ -36,13 +44,38 @@ export async function POST(req: Request) {
     loadKnowledge(),
   ]);
   const competitors = other?.status === "ok" ? [other.data] : [];
+  const conversationId = typeof body?.conversationId === "string" && body.conversationId ? body.conversationId : undefined;
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (event: unknown) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       try {
+        let answer = "";
         for await (const event of runChat({ question, place: resolved.data, competitors, knowledge, generate, profile: profileLines(body?.profile) })) {
+          if (event.type === "delta") {
+            answer += event.text;
+            send(event);
+            continue;
+          }
+          // 답변이 끝나면 저장하고, 저장된 대화를 먼저 알린 뒤 done 을 보낸다. 저장이 실패해도 답변은 보여준다.
+          if (answer.trim()) {
+            try {
+              const conversation = await saveExchange({
+                userId: user.id,
+                placeId,
+                competitorId: competitorId || undefined,
+                conversationId,
+                question,
+                answer: answer.trim(),
+                evidence: event.evidence as StoredEvidence[],
+                confirm: event.confirm as StoredConfirm | undefined,
+              });
+              if (conversation) send({ type: "conversation", conversation });
+            } catch (err) {
+              console.error("chat save failed:", err);
+            }
+          }
           send(event);
         }
       } catch (err) {

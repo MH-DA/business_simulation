@@ -3,11 +3,14 @@ import { CompareView } from "@/components/CompareView";
 import { NeedsCollection } from "@/components/NeedsCollection";
 import { Panel, SiteHeader } from "@/components/SiteHeader";
 import { buildCompareView } from "@/lib/compare-view";
+import { redirect } from "next/navigation";
 import { resolveCompetitor, resolvePlace } from "@/lib/places";
+import { getCurrentUser, loginHref } from "@/lib/session";
 
 // 경쟁 가게 비교 2단계: 결과. 상담 화면에서 "경쟁 가게 비교 다시 보기"로 돌아오는 곳이기도 하다.
 export default async function CompareResultPage({ params }: { params: Promise<{ placeId: string; competitorId: string }> }) {
   const { placeId, competitorId } = await params;
+  if (!(await getCurrentUser())) redirect(loginHref(`/compare/${encodeURIComponent(placeId)}/${encodeURIComponent(competitorId)}`));
   const [mine, other] = await Promise.all([resolvePlace(placeId), resolveCompetitor(competitorId)]);
 
   if (mine.status === "needs_collection" || other.status === "needs_collection") {
