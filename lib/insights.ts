@@ -1,3 +1,4 @@
+import { hasIntro } from "./checked.ts";
 import type { CollectedPlace, Guardrail } from "@/types";
 import type { Generate } from "@/lib/llm";
 
@@ -56,7 +57,7 @@ function buildPrompt(place: CollectedPlace, guardrails: Guardrail[]) {
   const user = [
     "[가게 정보]",
     `이름: ${s.name} / 업종: ${s.industry} (${s.category})`,
-    s.intro ? `소개글: ${s.intro.slice(0, 300)}` : "소개글: 없음",
+    s.intro ? `소개글: ${s.intro.slice(0, 300)}` : hasIntro(s) === undefined ? "소개글: 확인 전" : "소개글: 없음",
     s.amenities.length ? `편의시설: ${s.amenities.join(", ")}` : "",
     s.openHours ? `영업시간: ${s.openHours}` : "",
     top.length ? `손님이 고른 키워드: ${top.map((k) => k.keyword).join(", ")}` : "",

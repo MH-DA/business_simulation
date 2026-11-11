@@ -1,3 +1,4 @@
+import { hasAmenities, hasBookingTab, hasIntro, hasRepresentativeKeywords } from "../checked.ts";
 import type { CollectedPlace, Finding, Store } from "@/types";
 import { categoryOf, classifyKeyword, type KeywordGroup } from "./categories.ts";
 
@@ -19,7 +20,7 @@ export type KeywordFact = {
   gapPp?: number; // 반올림한 두 값의 차이 (내 값 − 경쟁 평균)
 };
 
-export type InfoCheck = { item: string; present: boolean };
+export type InfoCheck = { item: string; present: boolean | undefined }; // undefined = 확인 전
 
 export type MetricsResult = {
   facts: KeywordFact[]; // 비율이 높은 순 정렬은 하지 않고 입력 순서를 유지한다
@@ -40,10 +41,10 @@ function ratioOf(count: number, stored: number, store: Store): number {
 export function infoChecksOf(store: Store): InfoCheck[] {
   return [
     { item: "업종 등록 정보", present: Boolean(store.category) },
-    { item: "편의시설 설정", present: store.amenities.length > 0 },
-    { item: "소개글", present: Boolean(store.intro?.trim()) },
-    { item: "대표 키워드", present: store.representativeKeywords.length > 0 },
-    { item: "예약 탭", present: store.hasBookingTab === true },
+    { item: "편의시설 설정", present: hasAmenities(store) },
+    { item: "소개글", present: hasIntro(store) },
+    { item: "대표 키워드", present: hasRepresentativeKeywords(store) },
+    { item: "예약 탭", present: hasBookingTab(store) },
   ];
 }
 
@@ -119,7 +120,7 @@ export function computeMetrics(place: CollectedPlace, competitors: CollectedPlac
     }
   }
 
-  if (!infoChecks.find((c) => c.item === "소개글")!.present) {
+  if (infoChecks.find((c) => c.item === "소개글")!.present === false) {
     findings.push({
       id: "intro-missing",
       type: "정보",

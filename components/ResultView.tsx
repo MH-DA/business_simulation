@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, X } from "lucide-react";
+import { hasIntro } from "@/lib/checked";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Insights } from "@/lib/insights";
@@ -74,7 +75,7 @@ export function ResultView({ view }: { view: ResultViewModel }) {
               )}
             </div>
             <p className="mt-2 line-clamp-3 text-[15px] leading-[1.55] text-muted-foreground">
-              {store.intro ?? "등록된 소개글이 없어요."}
+              {hasIntro(store) === undefined ? "소개글은 확인 전이에요." : store.intro?.trim() || "등록된 소개글이 없어요."}
             </p>
           </section>
         </div>
@@ -275,7 +276,9 @@ function AssetSlide({ items, insights }: { items: StatusItem[]; insights: Insigh
             <li key={it.label} className={`rounded-tile border px-[15px] py-[15px] ${on ? "border-on-border bg-on-bg" : "border-off-border bg-off-bg"}`}>
               <p className="flex items-center gap-3">
                 <span className="text-[15px] font-bold">{it.label}</span>
-                <span className={`text-[11px] ${on ? "font-bold text-primary" : "text-off-pill-text"}`}>{on ? "등록됨" : "등록 정보 없음"}</span>
+                <span className={`text-[11px] ${on ? "font-bold text-primary" : "text-off-pill-text"}`}>
+                  {on ? "등록됨" : it.state === "off" ? "등록 정보 없음" : "확인 전"}
+                </span>
               </p>
               <p className="mt-1.5 text-xs text-muted-foreground">{it.text}</p>
             </li>

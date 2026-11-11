@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import io
 import json
 import re
 import sys
@@ -31,6 +32,9 @@ from typing import Any
 KST = dt.timezone(dt.timedelta(hours=9))
 INDUSTRIES = ("음식점", "카페", "공방", "헬스장", "스터디카페")
 SOURCES = ("crawler", "octoparse", "manual", "mock", "demo")
+
+# 목록·글 항목은 빈 값과 "없음"이 구분되지 않아, 원본에 없으면 Store.unchecked 에 적는다
+UNCHECKABLE_FIELDS = ("intro", "amenities", "coupons", "representativeKeywords", "tabs", "instagramUrl", "blogUrl")
 
 # Store 에서 비어 있으면 화면에 "확인 전"으로 나오는 선택 항목
 OPTIONAL_STORE_FIELDS = (
@@ -91,14 +95,14 @@ STORE_ALIASES = _aliases({
 # 리뷰 (Octoparse) 열 이름 → Review 필드. 여기 있는 열만 저장한다.
 REVIEW_ALIASES = _aliases({
     "body": ["text", "content", "review", "review_text", "본문", "리뷰", "리뷰내용", "리뷰본문", "내용"],
-    "visitedDate": ["visited_date", "visit_date", "방문일", "방문날짜", "방문일자"],
+    "visitedDate": ["visited_date", "visit_date", "방문일", "방문날짜", "방문일자", "방문시간"],
     "createdDate": ["created_date", "write_date", "작성일", "작성날짜", "작성일자"],
-    "visitCount": ["visit_count", "방문횟수", "방문차수", "방문회차", "n번째방문"],
-    "authType": ["auth_type", "auth", "인증수단", "인증", "인증방법"],
-    "photoCount": ["photo_count", "사진수", "사진개수", "리뷰사진수"],
+    "visitCount": ["visit_count", "방문횟수", "방분횟수", "방문차수", "방문회차", "n번째방문"],
+    "authType": ["auth_type", "auth", "인증수단", "인증", "인증방법", "방문인증"],
+    "photoCount": ["photo_count", "사진수", "사진개수", "리뷰사진수", "첨부이미지", "첨부사진"],
     "ownerReply": ["owner_reply", "reply", "사장님답글", "답글", "사장님댓글", "답글내용"],
     "hasOwnerReply": ["has_owner_reply", "답글여부", "사장님답글여부"],
-    "votedKeywords": ["voted_keywords", "keywords", "선택키워드", "키워드", "이런점이좋았어요"],
+    "votedKeywords": ["voted_keywords", "keywords", "선택키워드", "키워드", "이런점이좋았어요", "이런점이좋아요"],
 })
 
 REVIEW_FIELDS = set(REVIEW_ALIASES.values())
@@ -110,10 +114,17 @@ BLOCKED_REVIEW_COLUMNS = {
         "프로필", "프로필사진", "profile", "avatar",
         "링크", "url", "link", "리뷰링크", "작성자링크", "page_url",
         "팔로워", "팔로워수", "follower", "followers",
-        "작성자리뷰수", "리뷰어리뷰수", "작성자사진수",
+        "작성자리뷰수", "리뷰어리뷰수", "작성자사진수", "리뷰작성자", "리뷰작성자링크", "리뷰작성수",
         "이미지", "이미지url", "사진url", "image", "image_url", "photo_url",
     )
 }
+
+# Octoparse 리뷰 파일에 줄마다 반복되는 가게 단위 열. 리뷰로 저장하지 않고, 가게 번호가 맞는지 확인하는 데만 쓴다.
+REVIEW_FILE_STORE_COLUMNS = {norm_key(k) for k in (
+    "유입_URL", "도입_URL", "입력URL", "URL", "가게이름", "업체명", "카테고리", "업종", "전체평점", "별점",
+    "방문자리뷰", "블로그리뷰", "방문자리뷰수", "블로그리뷰수",
+)}
+URL_COLUMNS = {norm_key(k) for k in ("유입_URL", "도입_URL", "입력URL", "URL")}
 
 PHONE_RE = re.compile(r"01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}")
 INTRO_NOISE_RE = re.compile(r"\s*(펼쳐보기|접기|더보기|내용 더보기)\s*$")
@@ -396,6 +407,11 @@ def convert_store(raw: dict[str, Any], *, industry: str | None = None, place_id:
     if news:
         store["lastNewsDate"] = news
 
+    # 원본에 아예 없던 목록·글 항목은 "없음"이 아니라 "확인 전"으로 표시한다 (types/index.ts Store.unchecked)
+    unchecked = [f for f in UNCHECKABLE_FIELDS if f not in vals]
+    if unchecked:
+        store["unchecked"] = unchecked
+
     ind = industry or to_str(vals.get("industry"))
     if ind and ind not in INDUSTRIES:
         ind = infer_industry(ind)
@@ -457,9 +473,11 @@ def read_table(path: Path) -> list[dict[str, Any]]:
             except UnicodeDecodeError:
                 continue
         else:
-            raise ConvertError(f"{path.name} 의 글자 인코딩을 읽지 못했어요. 엑셀(.xlsx)로 내보내 주세요.")
+            raise ConvertError(
+                f"{path.name} 의 한글이 깨진 채로 저장돼 있어 읽을 수 없어요. CSV를 엑셀이나 메모장으로 열었다가 "
+                "저장하면 이렇게 될 수 있어요. Octoparse 에서 엑셀(.xlsx)로 다시 내보내 주세요.")
         delim = "\t" if suffix == ".tsv" else ","
-        rows = list(csv.reader(text.splitlines(), delimiter=delim))
+        rows = list(csv.reader(io.StringIO(text, newline=""), delimiter=delim))  # 리뷰 안 줄바꿈 유지
     else:
         raise ConvertError(f"리뷰 파일은 .xlsx 또는 .csv 여야 해요: {path.name}")
     if not rows:
@@ -469,7 +487,7 @@ def read_table(path: Path) -> list[dict[str, Any]]:
 
 
 def convert_reviews(rows: list[dict[str, Any]], *, ref: dt.date, extra_map: dict[str, str] | None = None,
-                    report: dict[str, list[str]] | None = None) -> list[dict[str, Any]]:
+                    report: dict[str, list[str]] | None = None, place_id: str | None = None) -> list[dict[str, Any]]:
     report = report if report is not None else {"warnings": [], "unknown": [], "blocked": []}
     report.setdefault("blocked", [])
     if not rows:
@@ -487,8 +505,20 @@ def convert_reviews(rows: list[dict[str, Any]], *, ref: dt.date, extra_map: dict
         elif k in aliases and aliases[k] in REVIEW_FIELDS:
             if aliases[k] not in columns.values():
                 columns[col] = aliases[k]
-        elif col:
+        elif k in REVIEW_FILE_STORE_COLUMNS or not k:
+            continue  # 줄마다 반복되는 가게 정보 또는 빈 열
+        else:
             report["unknown"].append(col)
+
+    # 다른 가게의 리뷰 파일을 잘못 넣지 않았는지 확인
+    if place_id:
+        url_col = next((c for c in rows[0].keys() if norm_key(c) in URL_COLUMNS), None)
+        found = {place_id_from_url(str(r.get(url_col) or "")) for r in rows[:20]} - {None} if url_col else set()
+        if found and place_id not in found:
+            raise ConvertError(
+                f"리뷰 파일의 가게 번호({', '.join(sorted(found))})가 가게 정보({place_id})와 달라요. "
+                "다른 가게의 리뷰 파일을 넣은 것 같아요."
+            )
 
     if "body" not in columns.values():
         raise ConvertError(
@@ -531,10 +561,30 @@ def convert_reviews(rows: list[dict[str, Any]], *, ref: dt.date, extra_map: dict
         r["source"] = "octoparse"
         reviews.append(r)
 
+    # Octoparse 가 페이지를 넘기며 같은 리뷰를 두 번 담는 경우가 있어 한 번만 남긴다
+    seen: set[tuple[Any, ...]] = set()
+    unique = []
+    for r in reviews:
+        key = (r["body"], r.get("visitedDate"), r.get("visitCount"))
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(r)
+    if len(unique) < len(reviews):
+        report["warnings"].append(f"같은 리뷰가 두 번 들어 있어 {len(reviews) - len(unique)}개를 뺐어요.")
+    reviews = unique
+
     dates = [r.get("visitedDate") or r.get("createdDate") for r in reviews]
-    dates = [d for d in dates if d]
-    if any(a < b for a, b in zip(dates, dates[1:])):
-        report["warnings"].append("리뷰가 최신순이 아닌 것 같아요. Octoparse 에서 '최신순'으로 다시 수집했는지 확인해 주세요.")
+    dated = [d for d in dates if d]
+    if any(x < y for x, y in zip(dated, dated[1:])):
+        if len(dated) == len(reviews):
+            # 화면과 AI 요약은 앞쪽 리뷰를 최근 리뷰로 읽으니 방문일 기준으로 다시 정렬한다
+            reviews.sort(key=lambda r: r.get("visitedDate") or r.get("createdDate"), reverse=True)
+            report["warnings"].append(
+                "리뷰가 최신순으로 수집되지 않아 방문일 기준으로 다시 정렬했어요. "
+                f"다만 수집한 {len(reviews)}개가 실제 가장 최근 리뷰라는 보장은 없어요.")
+        else:
+            report["warnings"].append("리뷰가 최신순이 아닌 것 같아요. Octoparse 에서 '최신순'으로 다시 수집했는지 확인해 주세요.")
     return reviews
 
 
@@ -557,6 +607,8 @@ def validate(place: dict[str, Any]) -> list[str]:
     for key in ("visitorReviewCount", "blogReviewCount", "ownerPhotoCount", "keywordParticipants"):
         if key in s and not isinstance(s[key], int):
             errs.append(f"store.{key} 가 정수가 아니에요")
+    if "unchecked" in s and not (isinstance(s["unchecked"], list) and set(s["unchecked"]) <= set(UNCHECKABLE_FIELDS)):
+        errs.append("store.unchecked 형식이 달라요")
     for key in ("hasBookingTab", "hasNaverPay", "hasPlacePlus"):
         if key in s and not isinstance(s[key], bool):
             errs.append(f"store.{key} 가 참/거짓이 아니에요")
@@ -609,7 +661,8 @@ def build_place(store_raw: dict[str, Any], review_rows: list[dict[str, Any]] | N
     at = collected_at or found_at or dt.datetime.now(KST).isoformat(timespec="seconds")
     if review_rows is not None:
         rep = {"warnings": report["warnings"], "unknown": report["review_unknown"], "blocked": report["blocked"]}
-        reviews = convert_reviews(review_rows, ref=_ref_date(at), extra_map=review_map, report=rep)
+        reviews = convert_reviews(review_rows, ref=_ref_date(at), extra_map=review_map, report=rep,
+                                  place_id=store.get("placeId"))
     else:
         reviews = old_reviews
 
@@ -618,6 +671,38 @@ def build_place(store_raw: dict[str, Any], review_rows: list[dict[str, Any]] | N
     if errs:
         raise ConvertError("변환 결과가 CollectedPlace 형식과 맞지 않아요:\n  - " + "\n  - ".join(errs))
     return place
+
+
+def store_from_review_rows(rows: list[dict[str, Any]], name: str | None) -> dict[str, Any]:
+    """가게 정보 파일이 없을 때: 리뷰 파일에 줄마다 들어 있는 가게 단위 열로 최소한의 가게 정보를 만든다.
+    파일에 없는 값은 만들지 않는다 (이름은 비어 있으면 --name 으로 받는다)."""
+    if not rows:
+        raise ConvertError("리뷰 파일이 비어 있어요.")
+    first = {norm_key(k): v for k, v in rows[0].items()}
+
+    def col(*names: str) -> Any:
+        for n in names:
+            v = first.get(norm_key(n))
+            if not is_blank(v):
+                return v
+        return None
+
+    url = col("유입_URL", "도입_URL", "입력URL", "URL")
+    raw: dict[str, Any] = {
+        "placeId": place_id_from_url(str(url or "")),
+        "name": name or col("가게이름", "업체명"),
+        "category": col("카테고리", "업종"),
+        "rating": col("전체평점", "별점"),
+        "visitorReviewCount": col("방문자리뷰", "방문자리뷰수"),
+        "blogReviewCount": col("블로그리뷰", "블로그리뷰수"),
+    }
+    m = re.search(r"timestamp(?:%3D|=)(\d{12})", str(url or ""))  # 지도 링크를 연 시각 ≈ 수집 시각
+    if m:
+        t = m.group(1)
+        raw["collectedAt"] = f"{t[:4]}-{t[4:6]}-{t[6:8]}T{t[8:10]}:{t[10:12]}:00+09:00"
+    if not raw["name"]:
+        raise ConvertError("리뷰 파일에 가게 이름이 없어요. --name \"가게 이름\" 으로 넣어 주세요.")
+    return {k: v for k, v in raw.items() if v is not None}
 
 
 def parse_map(items: list[str] | None) -> dict[str, str]:
@@ -635,7 +720,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stderr.reconfigure(encoding="utf-8")
     p = argparse.ArgumentParser(description="수집기 JSON + Octoparse 리뷰 → CollectedPlace JSON")
-    p.add_argument("--store", required=True, help="수집기 결과 JSON (또는 이미 변환한 data/places/*.json)")
+    p.add_argument("--store", help="수집기 결과 JSON (또는 이미 변환한 data/places/*.json). "
+                   "없으면 리뷰 파일 속 가게 정보(별점, 방문자 리뷰 수, 링크)로 만든다")
+    p.add_argument("--name", help="가게 이름 (--store 없이 리뷰 파일만 쓸 때, 파일에 이름이 없으면)")
     p.add_argument("--reviews", help="Octoparse 리뷰 파일 (.xlsx 또는 .csv)")
     p.add_argument("--out", help="저장할 파일 (기본: data/places/<placeId>.json)")
     p.add_argument("--industry", choices=INDUSTRIES, help="대상 업종 (자동으로 못 정할 때)")
@@ -651,15 +738,22 @@ def main(argv: list[str] | None = None) -> int:
 
     report: dict[str, list[str]] = {}
     try:
-        store_path = Path(a.store)
-        if not store_path.exists():
-            raise ConvertError(f"파일이 없어요: {store_path}")
-        store_raw = json.loads(store_path.read_text(encoding="utf-8-sig"))
-        if isinstance(store_raw, list):
-            if len(store_raw) != 1:
-                raise ConvertError("수집 결과 JSON 에 가게가 여러 개 있어요. 가게 하나씩 나눠서 넣어 주세요.")
-            store_raw = store_raw[0]
         rows = read_table(Path(a.reviews)) if a.reviews else None
+        if a.store:
+            store_path = Path(a.store)
+            if not store_path.exists():
+                raise ConvertError(f"파일이 없어요: {store_path}")
+            store_raw = json.loads(store_path.read_text(encoding="utf-8-sig"))
+            if isinstance(store_raw, list):
+                if len(store_raw) != 1:
+                    raise ConvertError("수집 결과 JSON 에 가게가 여러 개 있어요. 가게 하나씩 나눠서 넣어 주세요.")
+                store_raw = store_raw[0]
+        elif rows is not None:
+            store_path = Path(a.reviews)
+            store_raw = store_from_review_rows(rows, a.name)
+            a.source = a.source or "octoparse"
+        else:
+            raise ConvertError("--store 나 --reviews 중 하나는 넣어 주세요.")
         place = build_place(store_raw, rows, industry=a.industry, place_id=a.place_id, participants=a.participants,
                             source=a.source, collected_at=a.collected_at, store_map=parse_map(a.store_map),
                             review_map=parse_map(a.map), report=report)
@@ -681,7 +775,7 @@ def main(argv: list[str] | None = None) -> int:
     s = place["store"]
     print(f"가게: {s['name']} ({s['industry']}, placeId {s['placeId']})")
     print(f"키워드 {len(place['keywordStats'])}개, 리뷰 {len(place['reviews'])}개, 수집 시각 {place['collectedAt']}")
-    missing = [k for k in OPTIONAL_STORE_FIELDS if k not in s]
+    missing = list(dict.fromkeys([k for k in OPTIONAL_STORE_FIELDS if k not in s] + list(s.get("unchecked", []))))
     if missing:
         print(f"확인 전(값 없음): {', '.join(missing)}")
     if report.get("blocked"):
