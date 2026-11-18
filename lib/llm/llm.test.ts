@@ -174,3 +174,33 @@ test("챗봇: 판단 보조형은 확인 카드로 끝난다 (LLM이 빠뜨리�
   assert.equal(done?.type, "done");
   if (done?.type === "done") assert.ok(done.confirm && done.confirm.buttons.length === 3);
 });
+
+test("LLM_PROVIDER=openai 는 OPENAI_API_KEY 가 있을 때만 OpenAI 를 고른다 (스트리밍 응답을 글자로 내보냄)", async () => {
+  const { selectGenerate } = await import("./index.ts");
+  assert.equal(selectGenerate({ LLM_PROVIDER: "openai" } as unknown as NodeJS.ProcessEnv), null);
+  const gen = selectGenerate({ LLM_PROVIDER: "openai", OPENAI_API_KEY: "test-key", LLM_MODEL: "gpt-4.1" } as unknown as NodeJS.ProcessEnv);
+  assert.ok(gen);
+
+  const sse = [
+    'data: {"choices":[{"delta":{"content":"안녕"}}]}',
+    'data: {"choices":[{"delta":{"content":"하세요"},"finish_reason":"length"}]}',
+    "data: [DONE]",
+    "",
+  ].join("\n");
+  const realFetch = globalThis.fetch;
+  let sent: { model?: string; messages?: unknown[] } = {};
+  globalThis.fetch = (async (_url: string, init: RequestInit) => {
+    sent = JSON.parse(String(init.body));
+    return new Response(sse, { status: 200 });
+  }) as typeof fetch;
+  try {
+    let out = "";
+    for await (const t of gen!({ system: "S", user: "U" })) out += t;
+    assert.equal(sent.model, "gpt-4.1");
+    assert.equal(sent.messages?.length, 2);
+    assert.ok(out.startsWith("안녕하세요"));
+    assert.ok(out.includes("답변이 길어서")); // 길이 제한 안내
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

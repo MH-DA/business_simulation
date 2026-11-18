@@ -146,7 +146,7 @@ shadcn/ui 컴포넌트는 `components.json` 설정이 되어 있어서 필요할
 4. 지식 조각, 비교 사실, 가드레일 전부, 공통 규칙(점수·순위 금지, 없는 숫자 금지, 혼재 단정 금지)을 묶어 Claude에 보낸다.
 5. LLM은 답변과 함께 쓴 지식 ID를 `[[근거: ...]]`로 내보내고, 서버는 검색 결과에 있는 ID만 근거 카드로 보여준다. 판단 보조형은 `[[확인: ...]]` 확인 카드로 끝난다. 표시 줄은 화면에 노출되지 않게 걸러낸다.
 
-모델은 `LLM_MODEL`(기본 `claude-sonnet-5-5`)로 바꾸고, 호출은 `lib/llm/anthropic.ts` 한 곳에서만 한다. 확인 카드의 버튼 선택은 아직 저장하지 않는다(`/api/answers`는 이후 단계).
+모델은 `LLM_MODEL`(기본 `claude-sonnet-5-5`)로 바꾸고, 호출은 `lib/llm/anthropic.ts` 한 곳에서만 한다. OpenAI를 쓸 때는 `LLM_PROVIDER=openai`와 `OPENAI_API_KEY`를 넣으면 `lib/llm/openai.ts`가 호출한다(모델 기본 `gpt-4.1`). 확인 카드의 버튼 선택은 아직 저장하지 않는다(`/api/answers`는 이후 단계).
 
 ## 참고
 
