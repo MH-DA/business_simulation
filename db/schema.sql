@@ -9,13 +9,15 @@
 --    어떤 행도 읽거나 쓸 수 없다. 서버 접속(postgres 역할)은 RLS를 건너뛰므로 영향이 없다.
 --  - 그래도 한 번 더 막기 위해 anon, authenticated 역할의 권한을 회수한다.
 --
--- 표 6개
+-- 표 8개
 --  1. users          회원 (아이디, 비밀번호 해시, 사용자 이름)
 --  2. places         가게 (place_id 기준 한 줄)
 --  3. user_places    회원 ↔ 가게 연결 (내 가게)
 --  4. snapshots      수집 결과 한 장 = 한 줄 (CollectedPlace 전체를 jsonb로 저장)
 --  5. jobs           분석 작업 상태
 --  6. owner_answers  확인 카드에 대한 사장님 답변
+--  7. conversations  상담 대화 (상담 화면 왼쪽 "이전 대화" 목록의 한 줄)
+--  8. chat_messages  대화 안의 질문·답변
 
 -- 1. 회원 -----------------------------------------------------------------
 -- 비밀번호는 평문으로 저장하지 않는다. 서버가 scrypt로 해시한 문자열만 password_hash에 넣는다. (lib/users.ts)
@@ -104,6 +106,36 @@ create table if not exists owner_answers (
 );
 create index if not exists owner_answers_place_idx on owner_answers (place_id, answered_at desc);
 
+-- 7. 상담 대화 -------------------------------------------------------------
+-- 회원이 한 가게에 대해 나눈 대화 한 묶음. 제목은 첫 질문 앞부분 (lib/chats.ts, LLM이 만들지 않는다).
+-- place_id에 외래키를 걸지 않는다 (개발용 샘플 가게처럼 places에 없는 가게도 상담할 수 있다).
+create table if not exists conversations (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users (id) on delete cascade,
+  place_id      text not null,
+  competitor_id text,
+  title         text not null,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now(),
+  constraint conversations_title_len check (char_length(title) between 1 and 40)
+);
+create index if not exists conversations_user_place_idx on conversations (user_id, place_id, updated_at desc);
+
+-- 8. 대화 메시지 -----------------------------------------------------------
+-- role: user(사장님 질문) / assistant(답변). evidence = 근거 카드 목록, confirm = 확인 카드 (답변에만).
+create table if not exists chat_messages (
+  id              uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references conversations (id) on delete cascade,
+  role            text not null,
+  content         text not null,
+  evidence        jsonb not null default '[]'::jsonb,
+  confirm         jsonb,
+  created_at      timestamptz not null default now(),
+  constraint chat_messages_role_check check (role in ('user', 'assistant')),
+  constraint chat_messages_evidence_array check (jsonb_typeof(evidence) = 'array')
+);
+create index if not exists chat_messages_conversation_idx on chat_messages (conversation_id, created_at);
+
 -- RLS 켜기 ----------------------------------------------------------------
 -- 정책(policy)을 하나도 만들지 않으므로, Data API로는 모든 행이 막힌다.
 alter table users          enable row level security;
@@ -112,6 +144,8 @@ alter table user_places    enable row level security;
 alter table snapshots      enable row level security;
 alter table jobs           enable row level security;
 alter table owner_answers  enable row level security;
+alter table conversations  enable row level security;
+alter table chat_messages  enable row level security;
 
 -- Data API 역할의 권한 회수 (Supabase에만 있는 역할이라, 있을 때만 실행한다)
 do $$
@@ -119,14 +153,14 @@ declare r text;
 begin
   foreach r in array array['anon', 'authenticated'] loop
     if exists (select 1 from pg_roles where rolname = r) then
-      execute format('revoke all on table users, places, user_places, snapshots, jobs, owner_answers from %I', r);
+      execute format('revoke all on table users, places, user_places, snapshots, jobs, owner_answers, conversations, chat_messages from %I', r);
     end if;
   end loop;
 end $$;
 
--- 확인: 아래를 실행하면 6개 표 모두 rls_enabled = true 여야 한다.
+-- 확인: 아래를 실행하면 8개 표 모두 rls_enabled = true 여야 한다.
 --   select relname as "table", relrowsecurity as rls_enabled
 --   from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r' order by 1;
 
 -- 초기화 (표와 데이터를 전부 지운다. 필요할 때만 주석을 풀어서 실행)
--- drop table if exists owner_answers, jobs, snapshots, user_places, places, users cascade;
+-- drop table if exists chat_messages, conversations, owner_answers, jobs, snapshots, user_places, places, users cascade;
