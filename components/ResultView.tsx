@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Insights } from "@/lib/insights";
 import type { ResultViewModel, StatusItem } from "@/lib/result-view";
+import { GUIDE_BY_STATUS_LABEL } from "@/lib/smartplace-guides";
 
 // Figma 04 · 가게 분석 결과 (현황 / 더보기 / 리뷰 / 외부채널, 제안). 다음 단계는 경쟁 가게 비교(/compare).
 
@@ -56,6 +57,7 @@ export function ResultView({ view, locked = false }: { view: ResultViewModel; lo
               <InfoRow icon={CalendarDays} text={store.closedDays ?? "휴무일 확인 전"} />
               <InfoRow icon={Clock} text={store.openHours ? `영업시간 ${store.openHours}` : "영업시간 확인 전"} />
             </ul>
+            {(!store.openHours || !store.closedDays) && <GuideLink slug="hours" text="영업시간·휴무일 설정 방법" />}
           </section>
 
           <section className="flex-1 rounded-card border bg-card px-[26px] py-5">
@@ -79,6 +81,7 @@ export function ResultView({ view, locked = false }: { view: ResultViewModel; lo
             <p className="mt-2 line-clamp-3 text-[15px] leading-[1.55] text-muted-foreground">
               {hasIntro(store) === undefined ? "소개글은 확인 전이에요." : store.intro?.trim() || "등록된 소개글이 없어요."}
             </p>
+            <GuideLink slug="intro" text="소개글 수정 방법" />
           </section>
         </div>
 
@@ -172,6 +175,16 @@ function SlideTitle({ title, note }: { title: string; note?: string }) {
 
 const PUBLIC_NOTE = "현재 네이버 플레이스에 공개된 정보를 기준으로 분석했으며, 실제 가게 상황과 다를 수 있어요.";
 
+// 스마트플레이스 설정 가이드(/guide/[topic])로 가는 작은 링크
+function GuideLink({ slug, text }: { slug: string; text: string }) {
+  return (
+    <Link href={`/guide/${slug}`} className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary underline underline-offset-2">
+      {text}
+      <ArrowRight className="size-3" aria-hidden />
+    </Link>
+  );
+}
+
 function StatusCard({ item }: { item: StatusItem }) {
   const on = item.state === "on";
   return (
@@ -187,6 +200,7 @@ function StatusCard({ item }: { item: StatusItem }) {
         </span>
       </div>
       <p className={`text-xs ${on ? "text-on-text" : "text-off-text"}`}>{item.text}</p>
+      {!on && GUIDE_BY_STATUS_LABEL[item.label] && <GuideLink slug={GUIDE_BY_STATUS_LABEL[item.label]} text="설정 방법 보기" />}
     </li>
   );
 }
