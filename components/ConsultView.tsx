@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowUp, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUp, Check, ChevronLeft, ChevronRight, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PROFILE_STEPS, stageOf, type ProfileAnswers } from "@/lib/profile";
+import type { ConversationSummary, StoredMessage } from "@/lib/chats";
 import { SERVICE_NAME } from "@/lib/config";
 import { ConfirmCard, EvidenceCard } from "./AnswerCard";
 import { MarkdownAnswer } from "./MarkdownAnswer";
@@ -34,7 +35,17 @@ function parseSaved(raw: string | null): ProfileAnswers | null {
 
 const noSubscribe = () => () => {};
 
-export function ConsultView({ store, topKeywords, competitorId }: { store: StoreBrief; topKeywords: string[]; competitorId?: string }) {
+export function ConsultView({
+  store,
+  topKeywords,
+  competitorId,
+  initialConversations,
+}: {
+  store: StoreBrief;
+  topKeywords: string[];
+  competitorId?: string;
+  initialConversations: ConversationSummary[];
+}) {
   // 서버 렌더에서는 저장값이 없다고 보고(null), 브라우저에서 sessionStorage 를 읽는다.
   const savedRaw = useSyncExternalStore(noSubscribe, () => readSaved(store.placeId), () => null);
   const saved = parseSaved(savedRaw);
@@ -52,7 +63,14 @@ export function ConsultView({ store, topKeywords, competitorId }: { store: Store
   }
 
   return done ? (
-    <ChatRoom store={store} topKeywords={topKeywords} competitorId={competitorId} answers={answers} onRedo={() => setOverride({ answers, done: false })} />
+    <ChatRoom
+      store={store}
+      topKeywords={topKeywords}
+      competitorId={competitorId}
+      answers={answers}
+      initialConversations={initialConversations}
+      onRedo={() => setOverride({ answers, done: false })}
+    />
   ) : (
     <ProfileWizard key={answers.join(",")} initial={answers} onDone={finish} />
   );
@@ -183,20 +201,47 @@ const QUICK = ["우리 가게를 더 많이 알리고 싶어요", "플레이스 
 const UNAVAILABLE = "챗봇을 준비 중이에요. 잠시 뒤에 다시 시도해 주세요.";
 const FAILED = "답변을 만드는 중 문제가 생겼어요. 잠시 뒤 다시 시도해 주세요.";
 
+// 저장된 메시지(질문, 답변 순서) → 화면의 대화 묶음
+function toTurns(messages: StoredMessage[], nextId: () => number): Turn[] {
+  const turns: Turn[] = [];
+  for (const m of messages) {
+    if (m.role === "user") {
+      turns.push({ id: nextId(), question: m.content, answer: "", status: "done", evidence: [] });
+    } else if (turns.length) {
+      const last = turns[turns.length - 1];
+      last.answer = m.content;
+      last.evidence = m.evidence;
+      last.confirm = m.confirm;
+    }
+  }
+  return turns;
+}
+
+const dateText = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(+d) ? "" : `${d.getMonth() + 1}.${d.getDate()}.`;
+};
+
 function ChatRoom({
   store,
   topKeywords,
   competitorId,
   answers,
+  initialConversations,
   onRedo,
 }: {
   store: StoreBrief;
   topKeywords: string[];
   competitorId?: string;
   answers: ProfileAnswers;
+  initialConversations: ConversationSummary[];
   onRedo: () => void;
 }) {
   const [turns, setTurns] = useState<Turn[]>([]);
+  const [conversations, setConversations] = useState<ConversationSummary[]>(initialConversations);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
+  const [openError, setOpenError] = useState("");
   const [draft, setDraft] = useState("");
   const nextId = useRef(1);
   const endRef = useRef<HTMLDivElement>(null);
@@ -211,6 +256,30 @@ function ChatRoom({
     setTurns((all) => all.map((t) => (t.id === id ? fn(t) : t)));
   }
 
+  function startNew() {
+    setTurns([]);
+    setActiveId(null);
+    setOpenError("");
+  }
+
+  // 왼쪽 목록에서 이전 대화 열기
+  async function open(id: string) {
+    if (busy || opening || id === activeId) return;
+    setOpening(id);
+    setOpenError("");
+    try {
+      const res = await fetch(`/api/conversations/${encodeURIComponent(id)}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as { messages: StoredMessage[] };
+      setTurns(toTurns(data.messages, () => nextId.current++));
+      setActiveId(id);
+    } catch {
+      setOpenError("대화를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.");
+    } finally {
+      setOpening(null);
+    }
+  }
+
   async function send(text: string) {
     const question = text.trim();
     if (!question || busy) return;
@@ -221,7 +290,7 @@ function ChatRoom({
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ placeId: store.placeId, question, profile: answers, competitorId }),
+        body: JSON.stringify({ placeId: store.placeId, question, profile: answers, competitorId, conversationId: activeId ?? undefined }),
       });
       if (!res.ok || !res.body) {
         const info = (await res.json().catch(() => null)) as { status?: string } | null;
@@ -242,9 +311,16 @@ function ChatRoom({
           if (!line) continue;
           const event = JSON.parse(line.slice(6)) as
             | { type: "delta"; text: string }
+            | { type: "conversation"; conversation: ConversationSummary }
             | { type: "done"; evidence: Evidence[]; confirm?: Confirm }
             | { type: "error"; message: string };
           if (event.type === "delta") patch(id, (t) => ({ ...t, answer: t.answer + event.text }));
+          else if (event.type === "conversation") {
+            // 저장된 대화: 이어서 쓰도록 기억하고, 왼쪽 목록 맨 위로 올린다
+            const c = event.conversation;
+            setActiveId(c.id);
+            setConversations((all) => [c, ...all.filter((x) => x.id !== c.id)]);
+          }
           else if (event.type === "done") patch(id, (t) => ({ ...t, status: "done", evidence: event.evidence, confirm: event.confirm }));
           else patch(id, (t) => ({ ...t, status: "error" }));
         }
@@ -269,7 +345,38 @@ function ChatRoom({
           {store.rating != null && <p className="mt-1 shrink-0 font-bold text-star">★ {store.rating.toFixed(1)}</p>}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">{store.category.split(",").join(" · ")}</p>
-        <div className="flex-1" />
+
+        {/* 이전 대화 목록 (로그인한 사장님의 이 가게 상담 기록) */}
+        <nav className="mt-8 flex min-h-0 flex-1 flex-col" aria-label="이전 대화">
+          <p className="text-[13px] font-bold text-muted-foreground">이전 대화</p>
+          {conversations.length === 0 ? (
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">아직 저장된 대화가 없어요. 질문을 보내면 여기에 남아요.</p>
+          ) : (
+            <ul className="mt-3 flex max-h-[260px] flex-col gap-1 overflow-y-auto pr-1">
+              {conversations.map((c) => {
+                const on = c.id === activeId;
+                return (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => void open(c.id)}
+                      disabled={busy || opening != null}
+                      aria-current={on ? "true" : undefined}
+                      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition disabled:cursor-not-allowed ${
+                        on ? "bg-card font-bold text-primary" : "hover:bg-card/70"
+                      }`}
+                    >
+                      <MessageSquare className="size-4 shrink-0 opacity-60" aria-hidden />
+                      <span className="min-w-0 flex-1 truncate">{opening === c.id ? "불러오는 중…" : c.title}</span>
+                      <span className="shrink-0 text-[11px] font-normal text-muted-foreground">{dateText(c.updatedAt)}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {openError && <p className="mt-2 text-xs text-destructive">{openError}</p>}
+        </nav>
         {stage && (
           <div className="mt-8 rounded-tile bg-card px-4 py-4">
             <p className="font-bold text-primary">{stage.name}</p>
@@ -299,7 +406,7 @@ function ChatRoom({
           <h1 className="text-xl font-bold">우리 가게 마케팅 이야기</h1>
           <button
             type="button"
-            onClick={() => setTurns([])}
+            onClick={startNew}
             disabled={busy}
             className="h-11 rounded-xl bg-secondary px-7 text-sm font-bold text-primary disabled:opacity-50"
           >

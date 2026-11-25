@@ -1,8 +1,10 @@
+import { GuestGate } from "@/components/GuestGate";
 import { NeedsCollection } from "@/components/NeedsCollection";
 import { ResultView } from "@/components/ResultView";
 import { Panel, SiteHeader } from "@/components/SiteHeader";
 import { resolvePlace } from "@/lib/places";
 import { buildResultView } from "@/lib/result-view";
+import { getCurrentUser } from "@/lib/session";
 
 export default async function ResultPage({ params }: { params: Promise<{ placeId: string }> }) {
   const { placeId } = await params;
@@ -20,11 +22,18 @@ export default async function ResultPage({ params }: { params: Promise<{ placeId
   }
 
   const view = buildResultView(resolved.data, resolved.isDemo);
+  const user = await getCurrentUser();
   return (
     <>
       <SiteHeader />
       <Panel>
-        <ResultView view={view} />
+        {user ? (
+          <ResultView view={view} />
+        ) : (
+          <GuestGate next={`/result/${encodeURIComponent(placeId)}`}>
+            <ResultView view={view} locked />
+          </GuestGate>
+        )}
       </Panel>
     </>
   );
